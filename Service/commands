@@ -1,0 +1,8 @@
+register {"username":"user1","skills":[{"name":"HTML","points":10},{"name":"CSS","points":20}]}
+register {"username":"user3","skills":[{"name":"HTML","points":30},{"name":"CSS","points":20},{"name":"JAVA","points":44}]}
+register {"username":"user10","skills":[{"name":"HTML","points":15},{"name":"CSSS","points":20},{"name":"JAVA","points":440}]}
+register {"username":"user5","skills":[{"name":"CSS","points":15},{"name":"HTML","points":25}]}
+register {"username":"user4","skills":[{"name":"CSS","points":30},{"name":"HTML","points":30}]}
+addProject {"title":"project12","skills":[{"name":"HTML","points":10},{"name":"CSS","points":20}],"budget":10}
+addProject {"title":"project11","skills":[{"name":"HTML","points":10},{"name":"CSS","points":20}],"budget":10}
+end
