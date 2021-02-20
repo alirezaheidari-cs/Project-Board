@@ -1,8 +1,10 @@
+// const SqliteDatabase = require('../DataAccess/SqliteDatabase');
+let SqliteDatabase;
 class Project {
 
-    static allProjects = []
-    static db;
-    static sqliteDatabase;
+    static setDatabase (sqliteDatabase){
+        SqliteDatabase = sqliteDatabase;
+    }
 
     constructor(id, title, skills, budget, ownerId, bidOffers, description, deadline, winnerId, imageURL, isActive) {
         this.id = id;
@@ -18,39 +20,50 @@ class Project {
         this.isActive = isActive;
     }
 
+
     static async getAllProjects() {
-        let allProjects = await Project.sqliteDatabase.getAllProjects();
+        let allProjects = await SqliteDatabase.getAllProjectsFromDatabase();
         return allProjects;
     }
 
 
     static async getProjectWithProjectId(id) {
-        let project = await Project.sqliteDatabase.getProjectWithId(id);
+        let project = await SqliteDatabase.getProjectWithIdFromDatabase(id);
         return project;
     }
 
     static async isThereAnyProjectsWithId(id) {
-        let project = await Project.sqliteDatabase.getProjectWithId(id);
+        let project = await SqliteDatabase.getProjectWithIdFromDatabase(id);
         if (project !== undefined)
             return true;
         return false;
     }
 
     static async getProjectWithProjectIdWithActive(id, isActive) {
-        let project = await Project.sqliteDatabase.getProjectWithIdWithActive(id, isActive);
+        let project;
+        project = await SqliteDatabase.getProjectWithIdFromDatabase(id);
+        if (project === undefined) {
+            return undefined;
+        } else if (project.isActive != isActive) {
+            return undefined;
+        }
         return project;
-
     }
 
     static async isThereAnyProjectsWithIdWithActive(id, isActive) {
-        let project = await Project.sqliteDatabase.getProjectWithIdWithActive(id, isActive);
-        if (project !== undefined)
-            return true;
-        return false;
+        let project;
+        project = await SqliteDatabase.getProjectWithIdFromDatabase(id);
+        if (project === undefined) {
+            return false;
+        } else if (project.isActive != isActive) {
+            return false;
+        }
+        return true;
     }
 
     static async addProject(project) {
-        await Project.sqliteDatabase.addProject(project.id, project.title, project.skills, project.budget, project.ownerId, project.bidOffers, project.description, project.deadline, project.winnerId, project.imageURL, project.isActive);
+        await SqliteDatabase.addProjectToDatabase(project.id, project.title, project.skills, project.budget, project.ownerId,
+            project.bidOffers, project.description, project.deadline, project.winnerId, project.imageURL, project.isActive);
     }
 
     getId() {
@@ -74,7 +87,7 @@ class Project {
     }
 
     async setWinnerId(winnerId) {
-        await Project.sqliteDatabase.setProjectWinnerId(this.id, winnerId);
+        await SqliteDatabase.setProjectWinnerId(this.id, winnerId);
         this.winnerId = winnerId;
     }
 
@@ -99,7 +112,7 @@ class Project {
     }
 
     async setIsActive(isActive) {
-        await Project.sqliteDatabase.setProjectIsActive(this.id, isActive);
+        await SqliteDatabase.setProjectIsActive(this.id, isActive);
         this.isActive = isActive;
     }
 
@@ -108,7 +121,7 @@ class Project {
     }
 
     async addBidOffers(bidOffer) {
-        await Project.sqliteDatabase.addProjectBidOffer(this.id, bidOffer);
+        await SqliteDatabase.addProjectBidOffer(this.id, bidOffer);
         this.bidOffers.push(bidOffer);
     }
 
@@ -130,7 +143,6 @@ class Project {
             this.bidOffers.forEach(bidOffer => {
                 if (bidOffer.biddingUser === id) {
                     flag = true;
-                    throw "";
                 }
             });
         } catch (e) {
@@ -151,7 +163,7 @@ class Project {
         return this.budget;
     }
 
-    getSummary() {
+    getProjectSummary() {
         let summary = "id: " + this.id + "\ntitle: " + this.title + "\nbudget: " + this.budget + "\nskill: " + "\nrequired skills: [\n";
         this.skills.forEach(skill => {
             summary = summary.concat("name: " + skill.skillName + " ,points: " + skill.points + "\n");

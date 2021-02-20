@@ -14,21 +14,21 @@ register {"id":"user3","firstName":"amin","lastName":"davood","jobTitle":"AI","s
 register {"id":"user4","firstName":"amin","lastName":"davood","jobTitle":"AI","skills":[{"skillName":"HTML","points":70},{"skillName":"CSS","points":60}],"bio":"soccer player","profilePictureURL":"gppg"}
 register {"id":"user5","firstName":"amin","lastName":"davood","jobTitle":"AI","skills":[{"skillName":"HTML","points":60},{"skillName":"CSS","points":60}],"bio":"soccer player","profilePictureURL":"gppg"}
 
-addProject {"id":132,"title":"project1","skills":[{"skillName":"HTML","points":10},{"skillName":"CSS","points":20}],"budget":10,"description":"goood","deadline":"2021/10/10","imageURL":"asfaa"}
+addProject {"id":1,"title":"project1","skills":[{"skillName":"HTML","points":10},{"skillName":"CSS","points":20}],"budget":10,"description":"goood","deadline":"2021/10/10","imageURL":"asfaa"}
 addProject {"id":2,"title":"project2","skills":[{"skillName":"HTML","points":20},{"skillName":"CSS","points":20}],"budget":1,"description":"goood","deadline":"2021/10/10","imageURL":"asfaa"}
 
-bid {"biddingUser":"user2","projectId":1,"bidAmount":2}
-bid {"biddingUser":"user3","projectId":1,"bidAmount":1}
+bid {"biddingUser":"user4","projectId":1,"bidAmount":2}
+bid {"biddingUser":"user3","projectId":2,"bidAmount":1}
 bid {"biddingUser":"user4","projectId":1,"bidAmount":1}
 
-auction {"projectId":1}
+auction {"projectId":2}
 
+removeSkill {"skillName":"HTML"}
 removeSkill {"skillName":"CSS"}
-removeSkill {"skillName":"JAVA"}
 
-endorseAUserSkill {"id":"user2","skillName":"CSS"}
-seeSpecificProjectInformation {"id":3}
-seeSpecificUserInformation {"id":"user2"}
+endorseAUserSkill {"id":"user5","skillName":"CSS"}
+seeSpecificProjectInformation {"id":1}
+seeSpecificUserInformation {"id":"user3"}
 addSkill {"skillName":"JAVA","points":10}
 let skillsSet = [];
 */
@@ -47,31 +47,28 @@ class Application {
 
     }
 
-    async runApplication(port) {
+    static async runApplication(port) {
         Application.serverDatabasePreprocessor = new ServerDatabasePreprocessor(port);
         await Application.serverDatabasePreprocessor.runDataBase();
         Application.skillsSet = await Application.serverDatabasePreprocessor.getSkillsFromServer();
         let allProjectsDataJSON = await Application.serverDatabasePreprocessor.getProjectsFromServer();
+        await Application.convertProjectJSONToProjectObject(allProjectsDataJSON);
         console.log("data caught from sever");
-        Application.convertProjectJSONToProjectObject(allProjectsDataJSON);
-        //await Application.importProjectsAndUsersDataFromDatabase('../Resource/Users.json', '../Resource/Projects.json');
-        Application.checkProjectsDeadlinesPassed();
+        await Application.checkProjectsDeadlinesPassed();
         await Application.readCommandsFromConsole();
     }
 
-    static convertProjectJSONToProjectObject(allProjectsDataJSON) {
+    static async convertProjectJSONToProjectObject(allProjectsDataJSON) {
         if (allProjectsDataJSON !== undefined) {
-            allProjectsDataJSON.forEach(projectData => {
+            for (let i = 0; i < allProjectsDataJSON.length; i++) {
+                let projectData = allProjectsDataJSON[i];
                 let project = new Project(projectData.id, projectData.title, projectData.skills, projectData.budget, projectData.ownerId,
                     projectData.bidOffers, projectData.description, (new Date(projectData.deadline)).getTime(), projectData.winnerId, projectData.imageURL, projectData.isActive);
-                Project.addProject(project);
-            });
+                await Project.addProject(project);
+            }
         }
     }
 
-    static readFromConsole() {
-        return readlineSync.question("");
-    }
 
     // static async importProjectsAndUsersDataFromDatabase(usersFilePath, projectsFilePath) {
     //     let allUsersDataJSON, allProjectsDataJSON;
@@ -108,13 +105,19 @@ class Application {
     //     }
     // }
 
-    static checkProjectsDeadlinesPassed() {
+    static async checkProjectsDeadlinesPassed() {
         let currentDate = new Date();
-        Project.allProjects.forEach(project => {
+        let allProjects = await Project.getAllProjects();
+        let allProjectsLength = 0;
+        for (let allProjectKey in allProjects) {
+            allProjectsLength += 1;
+        }
+        for (let i = 0; i < allProjectsLength; i++) {
+            let project = allProjects[i];
             if (project.deadline < currentDate.getTime() && project.isActive) {
-                Application.computeAuctionWinner(project.getId());
+                await Application.computeAuctionWinner(project.getId());
             }
-        });
+        }
     }
 
     static async handleRegisterUser(userInformationJSON) {
@@ -123,10 +126,10 @@ class Application {
         user.setUserInformation(userInformationJSON.id, userInformationJSON.firstName, userInformationJSON.lastName, userInformationJSON.jobTitle,
             userInformationJSON.skills, [], [], [], userInformationJSON.bio, userInformationJSON.profilePictureURL, []);
         Application.loggedInUser = user;
-
-        if (await User.isThereAnyUserWithId(userInformationJSON.id)) {
+        let flag = await User.isThereAnyUserWithId(userInformationJSON.id);
+        if (flag)
             return "login successful";
-        }
+
         await User.addUser(user);
         return "registration successful";
     }
@@ -140,12 +143,13 @@ class Application {
     static async handleAddProject(projectInformationJSON) {
         Application.currentMenu = "userAreaMenu";
         let project = undefined;
-        if (await Project.isThereAnyProjectsWithId(projectInformationJSON.id)) {
+        let flag = await Project.isThereAnyProjectsWithId(projectInformationJSON.id);
+        if (flag)
             return "there is a project with this id";
-        }
+
         try {
             project = new Project(projectInformationJSON.id, projectInformationJSON.title, projectInformationJSON.skills, projectInformationJSON.budget, Application.loggedInUser.getId(),
-                [], projectInformationJSON.description, (new Date(projectInformationJSON.deadline)).getTime(), undefined, projectInformationJSON.imageURL, true);
+                [], projectInformationJSON.description, (new Date(projectInformationJSON.deadline)).getTime(), -1, projectInformationJSON.imageURL, true);
         } catch (e) {
             return "wrong format in json";
         }
@@ -214,7 +218,7 @@ class Application {
         return await Application.adjustBiddingUser(project, bidInformationJSON.bidAmount);
     }
 
-    static computePointForBidder(user, project, userBudget) {
+    static async computePointForBidder(user, project, userBudget) {
         let userSkillsArray = user.getSkills();
         let projectRequiredSkillsArray = project.getSkills();
         let sigmaValueArray = projectRequiredSkillsArray.map(function (jobSkill) {
@@ -246,9 +250,14 @@ class Application {
         }
 
         await project.setIsActive(false);
-        await projectOwnerUser.removeProject(projectId);
+        try {
+            await projectOwnerUser.removeProject(projectId);
+        } catch (e) {
+            console.log(e)
+        }
+
         if (biddersUsers.length === 0) {
-            await project.setWinnerId(undefined);
+            await project.setWinnerId(-1);
             return "no one wins for project for id: " + projectId;
         }
         let winner = biddersUsers[0];
@@ -258,11 +267,11 @@ class Application {
                 winnerBidAmount = bidOffer.bidAmount;
             }
         });
-        let winnerPoint = Application.computePointForBidder(winner, project, bidOffers[0].bidAmount);
+        let winnerPoint = await Application.computePointForBidder(winner, project, bidOffers[0].bidAmount);
         for (let i = 0; i < bidOffers.length; i++) {
             let bidOffer = bidOffers[i];
             let bidderUser = await User.getUserWithId(bidOffer.biddingUser);
-            let bidPoint = Application.computePointForBidder(bidderUser, project, bidOffer.bidAmount);
+            let bidPoint = await Application.computePointForBidder(bidderUser, project, bidOffer.bidAmount);
             if (winnerPoint < bidPoint) {
                 winner = bidderUser;
                 winnerPoint = bidPoint;
@@ -274,10 +283,15 @@ class Application {
     }
 
     static async handleAuction(auctionInformationJSON) {
-        if (!(await Project.isThereAnyProjectsWithIdWithActive(auctionInformationJSON.projectId, true)))
-            return "there is not any projects with this id";
         let project;
         project = await Project.getProjectWithProjectIdWithActive(auctionInformationJSON.projectId, true);
+        if (project === undefined) {
+            return "there is not any projects with this id";
+        } else if (project.isActive == 0) {
+            return "there is not any projects with this id";
+        }
+
+
         if (project.getOwnerId() !== Application.loggedInUser.getId())
             return "you can not auction a project which you are not its owner";
         return await Application.computeAuctionWinner(auctionInformationJSON.projectId);
@@ -321,14 +335,21 @@ class Application {
     }
 
     static handleShowProfile() {
-        return Application.loggedInUser.getSummary();
+        return Application.loggedInUser.getUserSummary();
     }
 
     static async removeSkill(skillName) {
         let userFlag = false, skillFlag = false;
         let removeSkillMessage = "skill removed successfully";
         try {
-            Project.allProjects.forEach(project => {
+            let allProjects = await Project.getAllProjects();
+            let allProjectsLength = 0;
+            for (let allProjectsKey in allProjects) {
+                allProjectsLength += 1;
+            }
+            for (let i = 0; i < allProjectsLength; i++) {
+                let project = allProjects[i];
+
                 userFlag = false;
                 skillFlag = false;
                 if (project.getIsActive()) {
@@ -346,21 +367,23 @@ class Application {
 
                 if (userFlag && skillFlag) {
                     removeSkillMessage = "you cannot remove this skill because you bid for some project which needed this skill";
-                    throw "";
                 }
-            });
+            }
         } catch (e) {
 
         }
         if (removeSkillMessage === "you cannot remove this skill because you bid for some project which needed this skill")
             return removeSkillMessage;
 
-        await Application.loggedInUser.setSkills(Application.loggedInUser.getSkills().filter(skill => {
+        let newSkillsList = Application.loggedInUser.getSkills().filter(skill => {
             if (skill.skillName !== skillName) {
                 return skill;
             }
-        }));
-        let allUsers = await User.getAllUsers();
+        });
+        await Application.loggedInUser.setSkills(newSkillsList);
+        let allUsers = [];
+        allUsers = await User.getAllUsers();
+
         let allUsersLength = 0
         for (let allUserKey in allUsers) {
             allUsersLength += 1;
@@ -368,12 +391,11 @@ class Application {
         for (let i = 0; i < allUsersLength; i++) {
             let user = allUsers[i];
             let newEndorsedOtherUsersSkillsList = user.getEndorsedOtherUsersSkillsList().filter(endorsedObject => {
-                if (!(endorsedObject.id === Application.loggedInUser.getId() && endorsedObject.skillName === skillName)) {
+                if (!(endorsedObject.endorsedUserId === Application.loggedInUser.getId() && endorsedObject.skillName === skillName)) {
                     return endorsedObject;
                 }
             });
             await user.setEndorsedOtherUsersSkillsList(newEndorsedOtherUsersSkillsList);
-
         }
         return removeSkillMessage;
     }
@@ -381,33 +403,41 @@ class Application {
     static async handleRemoveSkill(skillJSON) {
         if (!(Application.loggedInUser.isThisUserHasThisSkill(skillJSON.skillName)))
             return "you don't have this skill";
-
         return await Application.removeSkill(skillJSON.skillName);
     }
 
-    static handleSeeAllAvailableProjectsInformation() {
+    static async handleSeeAllAvailableProjectsInformation() {
         let allProjectsSummary = "----------------------\n";
-        Project.allProjects.forEach(project => {
+        let allProjects = await Project.getAllProjects();
+        let allProjectsLength = 0;
+        for (let allProjectKey in allProjects) {
+            allProjectsLength += 1;
+        }
+        for (let i = 0; i < allProjectsLength; i++) {
+            let project = allProjects[i];
             if (Application.userHasRequiredSkillsForProject(project.getSkills()) && Application.loggedInUser.getId() !== project.getOwnerId() && project.getIsActive()) {
-                allProjectsSummary += project.getSummary();
+                allProjectsSummary += project.getProjectSummary();
                 allProjectsSummary += "----------------------\n";
             }
-        });
+        }
         return allProjectsSummary;
     }
 
-    static handleSeeSpecificProjectInformation(projectIdJSON) {
-        if (!Project.isThereAnyProjectsWithId(projectIdJSON.id)) {
+    static async handleSeeSpecificProjectInformation(projectIdJSON) {
+        if (!(await Project.isThereAnyProjectsWithId(projectIdJSON.id))) {
             return "there is not any projects with this id";
         }
-        return (Project.getProjectWithProjectId(projectIdJSON.id)).getSummary();
+        let project;
+        project = await Project.getProjectWithProjectId(projectIdJSON.id);
+        return "----------------------\n" + project.getProjectSummary() + "----------------------\n";
     }
 
     static async handleSeeSpecificUserInformation(userIdJSON) {
         if (!(await User.isThereAnyUserWithId(userIdJSON.id)))
             return "there is not any users with this id";
-        let user = await User.getUserWithId(userIdJSON.id);
-        return user.getSummary();
+        let user;
+        user = await User.getUserWithId(userIdJSON.id);
+        return user.getUserSummary();
     }
 
     static isThisSkillInSkillsSet(skill) {
@@ -416,14 +446,12 @@ class Application {
             Application.skillsSet.forEach(skillInSkillsSet => {
                 if (skillInSkillsSet.skillName === skill.skillName) {
                     flag = true;
-                    throw "skill found";
                 }
             });
         } catch (e) {
 
         }
         return flag;
-
     }
 
     static async handleAddSkill(skillJSON) {
@@ -439,13 +467,12 @@ class Application {
     static async readCommandsFromConsole() {
         let inputCommand = "";
         while (true) {
-            inputCommand = Application.readFromConsole();
+            inputCommand = await readlineSync.question('');
             if (inputCommand === "end")
                 break;
 
             await Application.handleCommandsWithMenu(inputCommand, Application.currentMenu);
         }
-
     }
 
     //
@@ -466,37 +493,38 @@ class Application {
     // }
 
     static async handleCommandsWithMenu(inputCommand, currentMenu) {
+        let message = "";
         try {
             if (currentMenu === "loginRegisterMenu") {
                 for (let i = 0; i < Application.loginRegisterMenuCommands.length; i++) {
                     let availableCommand = Application.loginRegisterMenuCommands[i];
                     if (inputCommand.startsWith(availableCommand) || inputCommand === availableCommand) {
-                        await Application.handleLoginRegisterMenuCommands(inputCommand);
-                        throw "";
+                        message = await Application.handleLoginRegisterMenuCommands(inputCommand);
+                        break;
                     }
                 }
             } else if (currentMenu === "userAreaMenu") {
                 for (let i = 0; i < Application.userAreaMenuCommands.length; i++) {
                     let availableCommand = Application.userAreaMenuCommands[i];
                     if (inputCommand.startsWith(availableCommand) || inputCommand === availableCommand) {
-                        await Application.handleUserAreaMenu(inputCommand);
-                        throw "";
+                        message = await Application.handleUserAreaMenu(inputCommand);
+                        break;
                     }
                 }
             } else if (currentMenu === "editProfileMenu") {
                 for (let i = 0; i < Application.editProfileMenuCommands.length; i++) {
                     let availableCommand = Application.editProfileMenuCommands[i];
                     if (inputCommand.startsWith(availableCommand) || inputCommand === availableCommand) {
-                        await Application.handleEditProfileMenu(inputCommand);
-                        throw "";
+                        message = await Application.handleEditProfileMenu(inputCommand);
+                        break;
                     }
                 }
             }
-            console.log("invalid command");
-            throw "";
         } catch (e) {
-            console.log(Application.availableCommandsForThisMenu());
+
         }
+        console.log(message);
+        console.log(Application.availableCommandsForThisMenu());
     }
 
     static async handleLoginRegisterMenuCommands(inputCommand) {
@@ -509,14 +537,13 @@ class Application {
                 console.log(userInformationJSON);
                 return;
             }
-            console.log(await Application.handleRegisterUser(userInformationJSON));
+            return await Application.handleRegisterUser(userInformationJSON);
         } else {
-            console.log("invalid command");
+            return "invalid command";
         }
     }
 
     static async handleUserAreaMenu(inputCommand) {
-
         if (inputCommand.startsWith("register ")) {
             let matcher = /register ({.+})/.exec(inputCommand);
             let userInformationJSON = "wrong format for user information";
@@ -526,7 +553,7 @@ class Application {
                 console.log(userInformationJSON);
                 return;
             }
-            console.log(await Application.handleRegisterUser(userInformationJSON));
+            return await Application.handleRegisterUser(userInformationJSON);
         } else if (inputCommand.startsWith("addProject ")) {
             let matcher = /addProject ({.+})/.exec(inputCommand);
             let projectInformationJSON = "wrong format for project information";
@@ -536,7 +563,7 @@ class Application {
                 console.log(projectInformationJSON);
                 return;
             }
-            console.log(await Application.handleAddProject(projectInformationJSON));
+            return await Application.handleAddProject(projectInformationJSON);
         } else if (inputCommand.startsWith("bid ")) {
 
             let matcher = /bid ({.+})/.exec(inputCommand);
@@ -547,7 +574,7 @@ class Application {
                 console.log(bidInformationJSON);
                 return;
             }
-            console.log(await Application.handleBid(bidInformationJSON));
+            return await Application.handleBid(bidInformationJSON);
         } else if (inputCommand.startsWith("auction ")) {
             let matcher = /auction ({.+})/.exec(inputCommand);
             let auctionInformationJSON = "wrong format for auction information";
@@ -557,16 +584,16 @@ class Application {
                 console.log(auctionInformationJSON);
                 return;
             }
-            console.log(await Application.handleAuction(auctionInformationJSON));
+            return await Application.handleAuction(auctionInformationJSON);
         } else if (inputCommand === ("seeAllUsersInformation")) {
-            console.log(await Application.handleSeeAllUsersInformation());
-
+            return await Application.handleSeeAllUsersInformation();
         } else if (inputCommand.startsWith("logout")) {
-            console.log(Application.handleLogout());
+            return Application.handleLogout();
         } else if (inputCommand === "editProfile") {
             Application.currentMenu = "editProfileMenu";
+            return "welcome to editProfileMenu";
         } else if (inputCommand === "seeAllAvailableProjectsInformation") {
-            console.log(Application.handleSeeAllAvailableProjectsInformation());
+            return await Application.handleSeeAllAvailableProjectsInformation();
         } else if (inputCommand.startsWith("seeSpecificProjectInformation")) {
             let matcher = /seeSpecificProjectInformation ({.+})/.exec(inputCommand);
             let projectIdJSON = "wrong format for see a specific project information";
@@ -576,7 +603,7 @@ class Application {
                 console.log(projectIdJSON);
                 return;
             }
-            console.log(await Application.handleSeeSpecificProjectInformation(projectIdJSON));
+            return await Application.handleSeeSpecificProjectInformation(projectIdJSON);
         } else if (inputCommand.startsWith("seeSpecificUserInformation")) {
             let matcher = /seeSpecificUserInformation ({.+})/.exec(inputCommand);
             let userIdJSON = "wrong format for see a specific user information";
@@ -586,7 +613,7 @@ class Application {
                 console.log(userIdJSON);
                 return;
             }
-            console.log(await Application.handleSeeSpecificUserInformation(userIdJSON));
+            return await Application.handleSeeSpecificUserInformation(userIdJSON);
         } else if (inputCommand.startsWith("endorseAUserSkill")) {
             let matcher = /endorseAUserSkill ({.+})/.exec(inputCommand);
             let endorseAUserSkillJSON = "wrong format for endorse a user skill";
@@ -596,9 +623,9 @@ class Application {
                 console.log(endorseAUserSkillJSON);
                 return;
             }
-            console.log(await Application.handleEndorseAUserSkill(endorseAUserSkillJSON));
+            return await Application.handleEndorseAUserSkill(endorseAUserSkillJSON);
         } else {
-            console.log("invalid command");
+            return "invalid command";
         }
     }
 
@@ -612,7 +639,7 @@ class Application {
                 console.log(userInformationJSON);
                 return;
             }
-            console.log(await Application.handleRegisterUser(userInformationJSON));
+            return await Application.handleRegisterUser(userInformationJSON);
         } else if (inputCommand.startsWith("removeSkill")) {
             let matcher = /removeSkill ({.+})/.exec(inputCommand);
             let removeSkillJSON = "wrong format for remove Skill";
@@ -622,7 +649,7 @@ class Application {
                 console.log(removeSkillJSON);
                 return;
             }
-            console.log(await Application.handleRemoveSkill(removeSkillJSON));
+            return await Application.handleRemoveSkill(removeSkillJSON);
         } else if (inputCommand.startsWith("addSkill")) {
             let matcher = /addSkill ({.+})/.exec(inputCommand);
             let skillJSON = "wrong format for add Skill";
@@ -632,40 +659,41 @@ class Application {
                 console.log(skillJSON);
                 return;
             }
-            console.log(await Application.handleAddSkill(skillJSON));
+            return await Application.handleAddSkill(skillJSON);
         } else if (inputCommand === "logout") {
-            console.log(Application.handleLogout());
+            return Application.handleLogout();
         } else if (inputCommand === "seeAvailableSkills") {
-            console.log(Application.skillsSet);
+            return Application.skillsSet;
         } else if (inputCommand === "back") {
             Application.currentMenu = "userAreaMenu";
+            return "welcome to userAreaMenu";
         } else if (inputCommand === "showProfile") {
-            console.log(await Application.handleShowProfile());
+            return Application.handleShowProfile();
         } else {
-            console.log("invalid command");
+            return "invalid command";
         }
     }
 
-    static readCommandsFromFile() {
-        // const rl = readline.createInterface({
-        //     input: fs.createReadStream('commands'),
-        //     output: process.stdout,
-        //     terminal: false
-        // });
-        // rl.on('line', (inputCommand) => {
-        //     handleCommandsWithMenu(inputCommand, currentMenu);
-        // });
-        // const allInputCommands = fs.readFileSync('commands').toString().split('\n');
-        // for (const inputCommand of allInputCommands) {
-        //
-        // }
-    }
+    // static readCommandsFromFile() {
+    // const rl = readline.createInterface({
+    //     input: fs.createReadStream('commands'),
+    //     output: process.stdout,
+    //     terminal: false
+    // });
+    // rl.on('line', (inputCommand) => {
+    //     handleCommandsWithMenu(inputCommand, currentMenu);
+    // });
+    // const allInputCommands = fs.readFileSync('commands').toString().split('\n');
+    // for (const inputCommand of allInputCommands) {
+    //
+    // }
+    // }
 
 }
 
 (async () => {
-    let application = new Application();
-    await application.runApplication(8080);
+
+    await Application.runApplication(8080);
 })()
 
 

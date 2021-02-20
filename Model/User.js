@@ -1,7 +1,10 @@
+// const SqliteDatabase = require('../DataAccess/SqliteDatabase');
+let SqliteDatabase;
 
 class User {
-    static allUsers = [];
-    static sqliteDatabase;
+    static setDatabase(sqliteDatabase) {
+        SqliteDatabase = sqliteDatabase;
+    }
 
     constructor() {
         this.id = undefined;
@@ -17,26 +20,27 @@ class User {
         this.endorsedOtherUsersSkillsList = undefined;
     }
 
+
     static async getAllUsers() {
-        let allUsers = await User.sqliteDatabase.getAllUsers();
+        let allUsers = await SqliteDatabase.getAllUsersFromDatabase();
         return allUsers;
     }
 
     static async isThereAnyUserWithId(id) {
-        let user = await User.sqliteDatabase.getUserWithId(id);
+        let user = await SqliteDatabase.getUserWithIdFromDatabase(id);
         if (user === undefined)
             return false;
         return true;
     }
 
     static async addUser(user) {
-        await User.sqliteDatabase.addUser(user.id, user.firstName, user.lastName, user.jobTitle, user.skills, user.activeProjectsIds,
+        await SqliteDatabase.addUserToDatabase(user.id, user.firstName, user.lastName, user.jobTitle, user.skills, user.activeProjectsIds,
             user.inactiveProjectsIds, user.takenProjectsIds, user.bio,
             user.profilePictureURL, user.endorsedOtherUsersSkillsList);
     }
 
     static async getUserWithId(id) {
-        let user = await User.sqliteDatabase.getUserWithId(id);
+        let user = await SqliteDatabase.getUserWithIdFromDatabase(id);
         if (user === undefined)
             return undefined;
         return user;
@@ -48,7 +52,7 @@ class User {
 
     async setEndorsedOtherUsersSkillsList(endorsedOtherUsersSkillsList) {
         this.endorsedOtherUsersSkillsList = endorsedOtherUsersSkillsList;
-        await User.sqliteDatabase.setUserEndorsedOtherUsersSkillsList(this.id, endorsedOtherUsersSkillsList);
+        await SqliteDatabase.setUserEndorsedOtherUsersSkillsList(this.id, endorsedOtherUsersSkillsList);
     }
 
     getProfilePictureURL() {
@@ -98,29 +102,30 @@ class User {
     async addProjectToTakenProjectsIds(projectId) {
         if (!this.takenProjectsIds.includes(projectId))
             this.takenProjectsIds.push(projectId);
-        await User.sqliteDatabase.addProjectToTakenProjectsIds(this.id, projectId);
+        await SqliteDatabase.addProjectToTakenProjectsIds(this.id, projectId);
 
     }
 
     async addProjectToActiveProjectsIds(projectId) {
         this.activeProjectsIds.push(projectId);
-        await User.sqliteDatabase.addProjectToActiveProjectsIds(this.id, projectId);
+        await SqliteDatabase.addProjectToActiveProjectsIds(this.id, projectId);
     }
 
     async addProjectToInactiveProjectsIds(projectId) {
         this.inactiveProjectsIds.push(projectId);
-        await User.sqliteDatabase.addProjectToInactiveProjectsIds(this.id, projectId);
+        await SqliteDatabase.addProjectToInactiveProjectsIds(this.id, projectId);
 
     }
 
     async removeProject(projectId) {
-        await this.addProjectToInactiveProjectsIds(this.id, projectId);
-        await User.sqliteDatabase.removeProjectIdFromActiveProjectsIds(this.id, projectId);
+        await this.addProjectToInactiveProjectsIds(projectId);
         this.activeProjectsIds = this.activeProjectsIds.filter(activeProjectId => {
             if (activeProjectId !== projectId) {
                 return activeProjectId;
             }
         });
+        await SqliteDatabase.removeProjectIdFromActiveProjectsIds(this.id, projectId);
+
     }
 
     getBio() {
@@ -133,7 +138,7 @@ class User {
 
     async setSkills(skills) {
         this.skills = skills;
-        await User.sqliteDatabase.setUserSkills(this.id, skills);
+        await SqliteDatabase.setUserSkills(this.id, skills);
     }
 
     getSkills() {
@@ -156,16 +161,15 @@ class User {
 
     async addToEndorsedOtherUsersSkillsList(endorsedObject) {
         this.endorsedOtherUsersSkillsList.push(endorsedObject);
-        await User.sqliteDatabase.addUserEndorsedOtherUsersSkillsList(this.id, endorsedObject);
+        await SqliteDatabase.addUserEndorsedOtherUsersSkillsList(this.id, endorsedObject);
     }
 
-     isThisUserEndorsedThisSkillForThisUser(skillName, endorsedUserId) {
+    isThisUserEndorsedThisSkillForThisUser(skillName, endorsedUserId) {
         let flag = false;
         try {
             this.endorsedOtherUsersSkillsList.forEach(endorsedObject => {
                 if (endorsedObject.id === endorsedUserId && endorsedObject.skillName === skillName) {
                     flag = true;
-                    throw "";
                 }
             })
         } catch (e) {
@@ -174,13 +178,12 @@ class User {
         return flag;
     }
 
-     isThisUserHasThisSkill(skillName) {
+    isThisUserHasThisSkill(skillName) {
         let flag = false;
         try {
             this.skills.forEach(skill => {
                 if (skill.skillName === skillName) {
                     flag = true;
-                    throw "";
                 }
             })
         } catch (e) {
@@ -191,7 +194,7 @@ class User {
 
     async addSkill(skill) {
         this.skills.push(skill);
-        await User.sqliteDatabase.addUserSkill(this.id, skill);
+        await SqliteDatabase.addUserSkill(this.id, skill);
     }
 
     async increaseSkillPoints(skillName) {
@@ -199,15 +202,14 @@ class User {
             this.getSkills().forEach(skill => {
                 if (skill.skillName === skillName) {
                     skill.points = skill.points + 1;
-                    throw "";
                 }
             });
         } catch (e) {
         }
-        await User.sqliteDatabase.increaseSkillPoints(this.id, skillName);
+        await SqliteDatabase.increaseSkillPoints(this.id, skillName);
     }
 
-    getSummary() {
+    getUserSummary() {
         let summary = "id: " + this.id + "\nfirst name: " + this.firstName + "\nlast name: " + this.lastName + "\njob title: " + this.jobTitle + "\nskills: [\n";
         this.skills.forEach(skill => {
             summary = summary.concat("skillName: " + skill.skillName + " ,points: " + skill.points + "\n");

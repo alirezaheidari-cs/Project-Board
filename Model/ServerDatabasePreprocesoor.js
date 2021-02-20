@@ -1,5 +1,5 @@
 const got = require('got');
-const SqliteDatabase = require('../DataAccess/SqliteDatabase.js');
+const SqliteDatabase = require('../DataAccess/SqliteDatabase');
 const User = require('./User.js');
 const Project = require('./Project.js');
 
@@ -30,12 +30,9 @@ class ServerDatabasePreprocessor {
     }
 
     async runDataBase() {
-        let db = new SqliteDatabase();
-        User.sqliteDatabase = db;
-        SqliteDatabase.sqliteDatabase = db;
-        Project.sqliteDatabase = db;
-
-        await db.runDatabase('../DataAccess/DB/');
+        await SqliteDatabase.runDatabase('../DataAccess/DB/');
+        Project.setDatabase(SqliteDatabase);
+        User.setDatabase(SqliteDatabase);
     }
 }
 
