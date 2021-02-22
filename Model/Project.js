@@ -1,8 +1,9 @@
 // const SqliteDatabase = require('../DataAccess/SqliteDatabase');
 let SqliteDatabase;
+
 class Project {
 
-    static setDatabase (sqliteDatabase){
+    static connectToDatabase(sqliteDatabase) {
         SqliteDatabase = sqliteDatabase;
     }
 
@@ -20,49 +21,37 @@ class Project {
         this.isActive = isActive;
     }
 
-
     static async getAllProjects() {
-        let allProjects = await SqliteDatabase.getAllProjectsFromDatabase();
-        return allProjects;
+        return await SqliteDatabase.getAllProjects();
     }
 
-
     static async getProjectWithProjectId(id) {
-        let project = await SqliteDatabase.getProjectWithIdFromDatabase(id);
-        return project;
+        return await SqliteDatabase.getProjectWithId(id);
     }
 
     static async isThereAnyProjectsWithId(id) {
-        let project = await SqliteDatabase.getProjectWithIdFromDatabase(id);
-        if (project !== undefined)
-            return true;
-        return false;
+        let project = await SqliteDatabase.getProjectWithId(id);
+        return project !== undefined;
     }
 
     static async getProjectWithProjectIdWithActive(id, isActive) {
         let project;
-        project = await SqliteDatabase.getProjectWithIdFromDatabase(id);
+        project = await SqliteDatabase.getProjectWithId(id);
         if (project === undefined) {
             return undefined;
-        } else if (project.isActive != isActive) {
+        } else if (project.isActive !== isActive) {
             return undefined;
         }
         return project;
     }
 
     static async isThereAnyProjectsWithIdWithActive(id, isActive) {
-        let project;
-        project = await SqliteDatabase.getProjectWithIdFromDatabase(id);
-        if (project === undefined) {
-            return false;
-        } else if (project.isActive != isActive) {
-            return false;
-        }
-        return true;
+        let project = Project.getProjectWithProjectIdWithActive(id, isActive);
+        return project !== undefined;
     }
 
     static async addProject(project) {
-        await SqliteDatabase.addProjectToDatabase(project.id, project.title, project.skills, project.budget, project.ownerId,
+        await SqliteDatabase.addProject(project.id, project.title, project.skills, project.budget, project.ownerId,
             project.bidOffers, project.description, project.deadline, project.winnerId, project.imageURL, project.isActive);
     }
 
@@ -70,41 +59,9 @@ class Project {
         return this.id;
     }
 
-    setId(id) {
-        this.id = id;
-    }
-
-    getImageURL() {
-        return this.imageURL;
-    }
-
-    setImageURL(imageURL) {
-        this.imageURL = imageURL;
-    }
-
-    getWinnerId() {
-        return this.winnerId;
-    }
-
     async setWinnerId(winnerId) {
         await SqliteDatabase.setProjectWinnerId(this.id, winnerId);
         this.winnerId = winnerId;
-    }
-
-    getDescription() {
-        return this.description;
-    }
-
-    setDescription(description) {
-        this.description = description;
-    }
-
-    getDeadline() {
-        return this.deadline;
-    }
-
-    setDeadline(deadLine) {
-        this.deadline = deadLine;
     }
 
     getIsActive() {
@@ -129,34 +86,15 @@ class Project {
         return this.bidOffers;
     }
 
-    getTitle() {
-        return this.title;
-    }
-
     getSkills() {
         return this.skills;
     }
 
     isThisUserIdSubmittedABid(id) {
-        let flag = false;
-        try {
-            this.bidOffers.forEach(bidOffer => {
-                if (bidOffer.biddingUser === id) {
-                    flag = true;
-                }
-            });
-        } catch (e) {
-
-        }
-        return flag;
-    }
-
-    removeBidWithUserId(id) {
-        this.bidOffers = this.bidOffers.filter(bidOffer => {
-            if (bidOffer.biddingUser !== id) {          // biddingUser is users id
-                return bidOffer;
-            }
+        let flag = this.bidOffers.find(bidOffer => {
+            return bidOffer.biddingUser === id;
         });
+        return flag !== undefined;
     }
 
     getBudget() {
@@ -169,24 +107,12 @@ class Project {
             summary = summary.concat("name: " + skill.skillName + " ,points: " + skill.points + "\n");
         });
         summary = summary.concat("]\n");
-        summary = summary.concat("bio: " + this.bio + "\n");
         summary += "description: " + this.description + "\ndeadline: " + new Date(this.deadline) + "\n";
+        summary = summary.concat("isActive:" + this.isActive + "\n");
+
         return summary;
     }
 
-    setProjectInformation(id, title, skills, budget, ownerId, bidOffers, description, deadline, winnerId, imageURL, isActive) {
-        this.id = id;
-        this.title = title;
-        this.skills = skills;
-        this.budget = budget;
-        this.ownerId = ownerId;
-        this.bidOffers = bidOffers;
-        this.description = description;
-        this.deadline = deadline;
-        this.winnerId = winnerId;
-        this.imageURL = imageURL;
-        this.isActive = isActive;
-    }
 }
 
 module.exports = Project;

@@ -1,9 +1,6 @@
 const got = require('got');
-const SqliteDatabase = require('../DataAccess/SqliteDatabase');
-const User = require('./User.js');
-const Project = require('./Project.js');
 
-class ServerDatabasePreprocessor {
+class ServerDataAccess {
 
     constructor(port) {
         this.port = port;
@@ -29,11 +26,6 @@ class ServerDatabasePreprocessor {
         }
     }
 
-    async runDataBase() {
-        await SqliteDatabase.runDatabase('../DataAccess/DB/');
-        Project.setDatabase(SqliteDatabase);
-        User.setDatabase(SqliteDatabase);
-    }
 }
 
-module.exports = ServerDatabasePreprocessor;
+module.exports = ServerDataAccess;
