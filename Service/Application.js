@@ -3,69 +3,85 @@ const DatabaseHandler = require('../Model/DatabaseHandler.js');
 const User = require('../Model/User.js');
 const Project = require('../Model/Project.js');
 const readlineSync = require('readline-sync');
+const AuthenticationDataAccess = require('../Model/AuthenticationDataAccess.js')
+const schedule = require("node-schedule");
 
 /*
-id, title, skills, budget, ownerId, bidOffers, description, deadline, winnerId, isActive, imageURL
-id, firstName, lastName, jobTitle, skills, activeProjectIds, inactiveProjectsIds, takenProjectsIds, bio, profilePictureURL
 
-register {"id":"user1","firstName":"hamid","lastName":"yaghobi","jobTitle":"AI","skills":[{"skillName":"CSS","points":50}],"bio":"olympiad","profilePictureURL":"gog"}
-register {"id":"user2","firstName":"hamid","lastName":"yaghobi","jobTitle":"AI","skills":[{"skillName":"CSS","points":50}],"bio":"olympiad","profilePictureURL":"gog"}
-register {"id":"user3","firstName":"amin","lastName":"davood","jobTitle":"AI","skills":[{"skillName":"HTML","points":60},{"skillName":"CSS","points":60}],"bio":"soccer player","profilePictureURL":"gppg"}
-register {"id":"user4","firstName":"amin","lastName":"davood","jobTitle":"AI","skills":[{"skillName":"HTML","points":70},{"skillName":"CSS","points":60}],"bio":"soccer player","profilePictureURL":"gppg"}
-register {"id":"user5","firstName":"amin","lastName":"davood","jobTitle":"AI","skills":[{"skillName":"HTML","points":60},{"skillName":"CSS","points":60}],"bio":"soccer player","profilePictureURL":"gppg"}
-register {"id":"user6","firstName":"amin","lastName":"davood","jobTitle":"AI","skills":[{"skillName":"HTML","points":60},{"skillName":"CSS","points":60}],"bio":"soccer player","profilePictureURL":"gppg"}
+login {"id":"user2","password":"alireza"}
+addProject {"id":3,"title":"project3","skills":[{"skillName":"HTML","points":20}],"budget":100,"ownerId":"user1","description":"goood","deadline":"2021/10/10","imageURL":"asfaa","token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MTQzMzU0NDYsImlkIjoidXNlcjIifQ.LvWvqixriRccGcpEdFdCQVwX9xU0aWcIvEVVYpOJWF0"}
+bid {"biddingUser":"user3","projectId":1,"bidAmount":10,"token":""}
+auction {"id":"user1","projectId":1,"token":""}
+editProfile {"token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MTQyNzMwMjcsImlkIjoidXNlcjIifQ.dU2hYhhDNHMhofKCHl8hTWSysTHygbHXLf4i05OIISo"}
+removeSkill {"id":"user3","skillName":"CSS","token":""}
+seeAllUsersInformation {"token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MTQyNzMwMjcsImlkIjoidXNlcjIifQ.dU2hYhhDNHMhofKCHl8hTWSysTHygbHXLf4i05OIISo"}
+endorseAUserSkill {"id":"user3","endorsedUserId":"user1","skillName":"JS","token":""}
+seeSpecificProjectInformation {"id":3,"token":""}
+seeSpecificUserInformation {"id":"user44","token":""}
+addSkill {"id":"user4","skillName":"CSS","points":120,"token":""}
+showProfile {"token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MTQyNzMwMjcsImlkIjoidXNlcjIifQ.dU2hYhhDNHMhofKCHl8hTWSysTHygbHXLf4i05OIISo"}
+register {"id":"user1","firstName":"hamid","lastName":"yaghobi","jobTitle":"AI","password":"alireza","bio":"olympiad","profilePictureURL":"gog"}
 
-addProject {"id":1,"title":"project1","skills":[{"skillName":"HTML","points":10},{"skillName":"CSS","points":20}],"budget":10,"description":"goood","deadline":"2021/10/10","imageURL":"asfaa"}
-addProject {"id":2,"title":"project2","skills":[{"skillName":"HTML","points":20},{"skillName":"CSS","points":20}],"budget":1,"description":"goood","deadline":"2021/10/10","imageURL":"asfaa"}
-addProject {"id":3,"title":"project3","skills":[{"skillName":"HTML","points":20}],"budget":100,"description":"goood","deadline":"2021/10/10","imageURL":"asfaa"}
+**************************************************
+register {"id":"user1","firstName":"hamid","lastName":"yaghobi","jobTitle":"AI","password":"alireza","bio":"olympiad","profilePictureURL":"gog"}
+register {"id":"user2","firstName":"hamid","lastName":"yaghobi","jobTitle":"AI","password":"alireza","bio":"olympiad","profilePictureURL":"gog"}
+register {"id":"user3","firstName":"hamid","lastName":"yaghobi","jobTitle":"AI","password":"alireza","bio":"olympiad","profilePictureURL":"gog"}
+register {"id":"user4","firstName":"hamid","lastName":"yaghobi","jobTitle":"AI","password":"alireza","bio":"olympiad","profilePictureURL":"gog"}
+register {"id":"user5","firstName":"hamid","lastName":"yaghobi","jobTitle":"AI","password":"alireza","bio":"olympiad","profilePictureURL":"gog"}
 
-bid {"biddingUser":"user5","projectId":1,"bidAmount":1}
-bid {"biddingUser":"user3","projectId":1,"bidAmount":10}
-bid {"biddingUser":"user4","projectId":1,"bidAmount":1}
-
-auction {"projectId":1}
-
-removeSkill {"skillName":"HTML"}
-removeSkill {"skillName":"CSS"}
-removeSkill {"skillName":"JAVA"}
-
-endorseAUserSkill {"endorsedUserId":"user5","skillName":"CSS"}
-seeSpecificProjectInformation {"id":1}
-seeSpecificUserInformation {"id":"user3"}
-addSkill {"skillName":"JAVA","points":120}
+addProject {"id":1,"title":"project1","skills":[{"skillName":"CSS","points":20}],"budget":10,"description":"goood","deadline":"2021/10/10","imageURL":"asfaa","token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MTQzMzE5MzAsImlkIjoidXNlcjIifQ.jGPmBCxTDxiCr-McG946ANoGpRlMkec6Y0I0bWdveEg"}
+addProject {"id":2,"title":"project2","skills":[{"skillName":"HTML","points":20},{"skillName":"CSS","points":20}],"budget":1,"description":"goood","deadline":"2021/10/10","imageURL":"asfaa","token":""}
+login {"id":"user1","password":"aliredza"}
+addProject {"id":3,"title":"project3","skills":[{"skillName":"HTML","points":20}],"budget":100,"ownerId":"user1","description":"goood","deadline":"2021/10/10","imageURL":"asfaa","token":""}
+bid {"projectId":1,"bidAmount":10,"token":""}
+auction {"projectId":1,"token":""}
+editProfile {"token":""}
+removeSkill {"skillName":"CSS","token":""}
+seeAllUsersInformation {"token":""}
+endorseAUserSkill {"endorsedUserId":"user1","skillName":"JS","token":""}
+seeSpecificProjectInformation {"id":3,"token":""}
+seeSpecificUserInformation {"id":"user44","token":""}
+addSkill {"skillName":"CSS","points":120,"token":""}
+showProfile {"token":""}
+register {"id":"user1","firstName":"hamid","lastName":"yaghobi","jobTitle":"AI","password":"alireza","bio":"olympiad","profilePictureURL":"gog"}
 
 */
 class Application {
-    static loginRegisterMenuCommands = ["register", "logout", "end"];
+    static loginRegisterMenuCommands = ["register", "login", "end"];
     static userAreaMenuCommands = ["register", "logout", "editProfile", "seeAllAvailableProjectsInformation", "seeSpecificProjectInformation"
         , "seeAllUsersInformation", "seeSpecificUserInformation", "bid", "endorseAUserSkill", "addProject", "auction", "end"];
     static editProfileMenuCommands = ["register", "logout", "addSkill",
         "removeSkill", "back", "showProfile", "seeAvailableSkills", "end"];
+    static skillsSet;
+
 
     constructor() {
         this.currentMenu = "loginRegisterMenu";
-        this.skillsSet = [];
-        this.loggedInUser = undefined;
+        this.authenticationDataAccess = undefined
     }
 
     setCurrentMenu(menu) {
         this.currentMenu = menu;
     }
 
-    setLoggedInUser(user) {
-        this.loggedInUser = user;
+    async getSkillsAndProjectsFromServer(port) {
+        const serverDataAccess = new ServerDataAccess(port);
+        Application.skillsSet = await serverDataAccess.getSkillsFromServer();
+        // await serverDataAccess.getProjectsFromServer();
+        // let allProjectsDataJSON = await serverDataAccess.getProjectsFromServer();
+        // await this.convertProjectJSONToProjectObject(allProjectsDataJSON);
+    }
+
+    async runDatabase(path) {
+        const dataBaseHandler = new DatabaseHandler();
+        await dataBaseHandler.runDataBase(path);
     }
 
     async runApplication(port) {
-        const serverDataAccess = new ServerDataAccess(port);
-        const dataBaseHandler = new DatabaseHandler();
-        await dataBaseHandler.runDataBase();
-        this.skillsSet = await serverDataAccess.getSkillsFromServer();
-        await serverDataAccess.getProjectsFromServer();
-        let allProjectsDataJSON = await serverDataAccess.getProjectsFromServer();
-        await this.convertProjectJSONToProjectObject(allProjectsDataJSON);
-
-        console.log("data caught from sever");
+        await this.runDatabase('../DataAccess/DB/');
+        await this.getSkillsAndProjectsFromServer(port);
+        this.authenticationDataAccess = await new AuthenticationDataAccess(9000)
+        console.log("skills are ready");
 
         await this.checkProjectsDeadlinesPassed();
         await this.readCommandsFromConsole();
@@ -149,6 +165,11 @@ class Application {
             if (userInformationJSON === undefined)
                 return userInformationJSON;
             return await this.registerUser(userInformationJSON);
+        } else if (inputCommand.startsWith("login ")) {
+            let userInformationJSON = Application.getJSONPartOfCommandWithGivenRegex(inputCommand, /login ({.+})/, "user Information");
+            if (userInformationJSON === undefined)
+                return userInformationJSON;
+            return await this.loginUser(userInformationJSON);
         } else {
             return "invalid command";
         }
@@ -160,44 +181,83 @@ class Application {
             if (userInformationJSON === undefined)
                 return userInformationJSON;
             return await this.registerUser(userInformationJSON);
+
         } else if (inputCommand.startsWith("addProject ")) {
             let projectInformationJSON = Application.getJSONPartOfCommandWithGivenRegex(inputCommand, /addProject ({.+})/, "project Information");
             if (projectInformationJSON === undefined)
                 return projectInformationJSON;
+            if ((await this.authenticationDataAccess.isTokenExpired(projectInformationJSON.token)))
+                return this.handleLogout();
             return await this.addProject(projectInformationJSON);
+
         } else if (inputCommand.startsWith("bid ")) {
             let bidInformationJSON = Application.getJSONPartOfCommandWithGivenRegex(inputCommand, /bid ({.+})/, "bid Information");
             if (bidInformationJSON === undefined)
                 return bidInformationJSON;
+            if ((await this.authenticationDataAccess.isTokenExpired(bidInformationJSON.token)))
+                return this.handleLogout();
+
             return await this.submitBidForProject(bidInformationJSON);
         } else if (inputCommand.startsWith("auction ")) {
             let auctionInformationJSON = Application.getJSONPartOfCommandWithGivenRegex(inputCommand, /auction ({.+})/, "auction Information");
             if (auctionInformationJSON === undefined)
                 return auctionInformationJSON;
+            if ((await this.authenticationDataAccess.isTokenExpired(auctionInformationJSON.token)))
+                return this.handleLogout();
+
             return await this.handleAuction(auctionInformationJSON);
-        } else if (inputCommand === ("seeAllUsersInformation")) {
+        } else if (inputCommand.startsWith("seeAllUsersInformation")) {
+            let seeAllUsersInformationJSON = Application.getJSONPartOfCommandWithGivenRegex(inputCommand, /seeAllUsersInformation ({.+})/, "see all users information");
+            if (seeAllUsersInformationJSON === undefined)
+                return seeAllUsersInformationJSON;
+            if ((await this.authenticationDataAccess.isTokenExpired(seeAllUsersInformationJSON.token)))
+                return this.handleLogout();
             return await this.getAllUsersInformation();
+
         } else if (inputCommand.startsWith("logout")) {
             return this.handleLogout();
-        } else if (inputCommand === "editProfile") {
+        } else if (inputCommand.startsWith("editProfile")) {
+
+            let editProfileJSON = Application.getJSONPartOfCommandWithGivenRegex(inputCommand, /editProfile ({.+})/, "edit profile");
+            if (editProfileJSON === undefined)
+                return editProfileJSON;
+            if ((await this.authenticationDataAccess.isTokenExpired(editProfileJSON.token)))
+                return this.handleLogout();
             this.setCurrentMenu("editProfileMenu");
             return "welcome to editProfileMenu";
-        } else if (inputCommand === "seeAllAvailableProjectsInformation") {
-            return await this.getAllAvailableProjectsInformationForUser();
+
+        } else if (inputCommand.startsWith("seeAllAvailableProjectsInformation")) {
+
+            let seeAllAvailableProjectsInformationJSON = Application.getJSONPartOfCommandWithGivenRegex(inputCommand, /seeAllAvailableProjectsInformationJSON ({.+})/, "see all available projects");
+            if (seeAllAvailableProjectsInformationJSON === undefined)
+                return seeAllAvailableProjectsInformationJSON;
+            if (await this.authenticationDataAccess.isTokenExpired(seeAllAvailableProjectsInformationJSON.token))
+                return this.handleLogout();
+            return await this.getAllAvailableProjectsInformationForUser(seeAllAvailableProjectsInformationJSON);
+
         } else if (inputCommand.startsWith("seeSpecificProjectInformation")) {
-            let projectIdJSON = Application.getJSONPartOfCommandWithGivenRegex(inputCommand, /seeSpecificProjectInformation ({.+})/, "see a specific project information");
-            if (projectIdJSON === undefined)
-                return projectIdJSON;
-            return await this.getSpecificProjectInformation(projectIdJSON);
+            let seeSpecificProjectInformationJSON = Application.getJSONPartOfCommandWithGivenRegex(inputCommand, /seeSpecificProjectInformation ({.+})/, "see a specific project information");
+            if (seeSpecificProjectInformationJSON === undefined)
+                return seeSpecificProjectInformationJSON;
+            if (await this.authenticationDataAccess.isTokenExpired(seeSpecificProjectInformationJSON.token))
+                return this.handleLogout();
+
+            return await this.getSpecificProjectInformation(seeSpecificProjectInformationJSON);
         } else if (inputCommand.startsWith("seeSpecificUserInformation")) {
-            let userIdJSON = Application.getJSONPartOfCommandWithGivenRegex(inputCommand, /seeSpecificUserInformation ({.+})/, "see a specific user information");
-            if (userIdJSON === undefined)
-                return userIdJSON;
-            return await this.getSpecificUserInformation(userIdJSON);
+            let seeSpecificUserInformationJSON = Application.getJSONPartOfCommandWithGivenRegex(inputCommand, /seeSpecificUserInformation ({.+})/, "see a specific user information");
+            if (seeSpecificUserInformationJSON === undefined)
+                return seeSpecificUserInformationJSON;
+            if (await this.authenticationDataAccess.isTokenExpired(seeSpecificUserInformationJSON.token))
+                return this.handleLogout();
+
+            return await this.getSpecificUserInformation(seeSpecificUserInformationJSON);
         } else if (inputCommand.startsWith("endorseAUserSkill")) {
             let endorseAUserSkillJSON = Application.getJSONPartOfCommandWithGivenRegex(inputCommand, /endorseAUserSkill ({.+})/, "endorse a user skill");
             if (endorseAUserSkillJSON === undefined)
                 return endorseAUserSkillJSON;
+            if (await this.authenticationDataAccess.isTokenExpired(endorseAUserSkillJSON.token))
+                return this.handleLogout();
+
             return await this.endorseSkill(endorseAUserSkillJSON);
         } else {
             return "invalid command";
@@ -206,29 +266,55 @@ class Application {
 
     async editProfileMenuCommandsHandler(inputCommand) {
         if (inputCommand.startsWith("register ")) {
+
             let userInformationJSON = Application.getJSONPartOfCommandWithGivenRegex(inputCommand, /register ({.+})/, "user Information");
             if (userInformationJSON === undefined)
                 return userInformationJSON;
             return await this.registerUser(userInformationJSON);
+
         } else if (inputCommand.startsWith("removeSkill")) {
+
             let removeSkillJSON = Application.getJSONPartOfCommandWithGivenRegex(inputCommand, /removeSkill ({.+})/, "remove Skill");
             if (removeSkillJSON === undefined)
                 return removeSkillJSON;
+            if (await this.authenticationDataAccess.isTokenExpired(removeSkillJSON.id, removeSkillJSON.token))
+                return this.handleLogout();
+
             return await this.removeSkill(removeSkillJSON);
         } else if (inputCommand.startsWith("addSkill")) {
+
             let skillJSON = Application.getJSONPartOfCommandWithGivenRegex(inputCommand, /addSkill ({.+})/, "add Skill");
             if (skillJSON === undefined)
                 return skillJSON;
+            if (await this.authenticationDataAccess.isTokenExpired(skillJSON.token))
+                return this.handleLogout();
             return await this.addSkill(skillJSON);
+
         } else if (inputCommand === "logout") {
             return this.handleLogout();
-        } else if (inputCommand === "seeAvailableSkills") {
-            return this.skillsSet;
-        } else if (inputCommand === "back") {
+        } else if (inputCommand.startsWith("seeAvailableSkills")) {
+
+            let seeAvailableSkillsJSON = Application.getJSONPartOfCommandWithGivenRegex(inputCommand, /seeAvailableSkills ({.+})/, "see available skills");
+            if (seeAvailableSkillsJSON === undefined)
+                return seeAvailableSkillsJSON;
+            if (await this.authenticationDataAccess.isTokenExpired(seeAvailableSkillsJSON.token))
+                return this.handleLogout();
+            return Application.skillsSet;
+
+        } else if (inputCommand.startsWith("back")) {
+
             this.setCurrentMenu("userAreaMenu");
             return "welcome to userAreaMenu";
-        } else if (inputCommand === "showProfile") {
-            return this.showUserProfile();
+
+        } else if (inputCommand.startsWith("showProfile")) {
+
+            let showProfileJSON = Application.getJSONPartOfCommandWithGivenRegex(inputCommand, /showProfile ({.+})/, "show profile");
+            if (showProfileJSON === undefined)
+                return showProfileJSON;
+            if (await this.authenticationDataAccess.isTokenExpired(showProfileJSON.token))
+                return this.handleLogout();
+            return await this.showUserProfile(showProfileJSON);
+
         } else {
             return "invalid command";
         }
@@ -236,12 +322,12 @@ class Application {
 
     availableCommandsForThisMenu() {
         if (this.currentMenu === "loginRegisterMenu") {
-            return "available commands for this menu are:\n1) register|login\n2) end";
+            return "available commands for this menu are:\n1) register\n2) login\n3) end";
         } else if (this.currentMenu === "editProfileMenu") {
-            return "available commands for this menu are:\n1) register|login\n2) logout\n3) addSkill\n" +
+            return "available commands for this menu are:\n1) register\n2) logout\n3) addSkill\n" +
                 "4) removeSkill\n5) back\n6) showProfile\n7) seeAvailableSkills\n8) end";
         } else if (this.currentMenu === "userAreaMenu") {
-            return "available commands for this menu are:\n1)  register|login\n2)  logout\n" +
+            return "available commands for this menu are:\n1)  register\n2)  logout\n" +
                 "3)  editProfile\n4)  seeAllAvailableProjectsInformation\n5)  seeSpecificProjectInformation\n" +
                 "6)  seeAllUsersInformation\n7)  seeSpecificUserInformation\n8)  bid\n" +
                 "9)  endorseAUserSkill\n10) addProject\n11) auction\n12) end";
@@ -249,45 +335,62 @@ class Application {
     }
 
     async registerUser(userInformationJSON) {
-        this.setCurrentMenu("userAreaMenu");
+        this.setCurrentMenu("loginRegisterMenu");
         let userFromDatabase = await User.getUserWithId(userInformationJSON.id);
-        if (userFromDatabase === undefined) {
-            let user = new User(userInformationJSON.id, userInformationJSON.firstName, userInformationJSON.lastName, userInformationJSON.jobTitle,
-                userInformationJSON.skills, [], [], [], userInformationJSON.bio, userInformationJSON.profilePictureURL, []);
-            this.setLoggedInUser(user);
-            await User.addUser(user);
-            return "registration successful";
+        if (userFromDatabase !== undefined) {
+            return "there is a user with this id";
         }
-        this.setLoggedInUser(userFromDatabase);
-        return "login successful";
+        let user = new User(userInformationJSON.id, userInformationJSON.firstName, userInformationJSON.lastName, userInformationJSON.jobTitle,
+            undefined, [], [], [], [], userInformationJSON.bio, userInformationJSON.profilePictureURL, []);
+        await User.addUser(user);
+        await this.authenticationDataAccess.sendRegisterInformationToServer(userInformationJSON.id, userInformationJSON.password);
+        return "registration successful";
+    }
+
+    async loginUser(userInformationJSON) {  // id , password ,
+        let user;
+        user = await User.getUserWithId(userInformationJSON.id);
+        if (user === undefined) {
+            return "there is not any users with this id";
+        }
+        let responseFromServer = await this.authenticationDataAccess.sendLoginInformationToServer(userInformationJSON.id, userInformationJSON.password);
+        if (responseFromServer.message === "password is wrong")
+            return "password is wrong";
+
+        let token = responseFromServer.token;
+        this.setCurrentMenu('userAreaMenu');
+        return token + "\n" + "login successful";
     }
 
     handleLogout() {
         this.setCurrentMenu("loginRegisterMenu");
-        this.setLoggedInUser(undefined);
         return "logged out successfully";
     }
 
     async addProject(projectInformationJSON) {
         this.setCurrentMenu("userAreaMenu");
-        let project = undefined;
-        if (await Project.isThereAnyProjectsWithId(projectInformationJSON.id))
+        let tokenOwnerId = await this.authenticationDataAccess.getUserIdWithToken(projectInformationJSON.token);
+        let project, user;
+        if (await Project.isThereAnyProjectsWithId(projectInformationJSON.id)) {
             return "there is a project with this id";
+        }
         try {
-            project = new Project(projectInformationJSON.id, projectInformationJSON.title, projectInformationJSON.skills, projectInformationJSON.budget, this.loggedInUser.getId(),
+            project = new Project(projectInformationJSON.id, projectInformationJSON.title, projectInformationJSON.skills, projectInformationJSON.budget, tokenOwnerId,
                 [], projectInformationJSON.description, (new Date(projectInformationJSON.deadline)).getTime(), null, projectInformationJSON.imageURL, true);
         } catch (e) {
             return "wrong format in json";
         }
-        await this.loggedInUser.addProjectToActiveProjectsIds(projectInformationJSON.id);
+        user = await User.getUserWithId(tokenOwnerId);
+        await user.addProjectToActiveProjectsIds(projectInformationJSON.id);
         await Project.addProject(project);
         return "project added successfully";
     }
 
-    async userHasRequiredSkillsForProject(requiredSkills) {
+    async userHasRequiredSkillsForProject(tokenOwnerId, requiredSkills) {
         let userHasRequiredSkills = true;
-        let userSkills;
-        userSkills = await this.loggedInUser.getSkills();
+        let userSkills, tokenOwnerUser;
+        tokenOwnerUser = await User.getUserWithId(tokenOwnerId);
+        userSkills = await tokenOwnerUser.getSkills();
         requiredSkills.forEach(requireSkill => {
             let requiredSkillInUsersSkills = userSkills.find(userSkill => {
                 return requireSkill.skillName === userSkill.skillName && requireSkill.points <= userSkill.points;
@@ -299,9 +402,9 @@ class Application {
         return userHasRequiredSkills;
     }
 
-    async addBidOfferToProjectBidList(project, userBudget) {
+    async addBidOfferToProjectBidList(tokenOwnerId, project, userBudget) {
         await project.addBidOffers({
-            "biddingUser": this.loggedInUser.getId(),
+            "biddingUser": tokenOwnerId,
             "projectId": project.getId(),
             "bidAmount": userBudget
         });
@@ -309,25 +412,24 @@ class Application {
     }
 
     async submitBidForProject(bidInformationJSON) {
-        if (bidInformationJSON.biddingUser !== this.loggedInUser.getId()) {
-            return "you can't bid for someone else";
-        } else if (!(await Project.isThereAnyProjectsWithId(bidInformationJSON.projectId))) {
+        let tokenOwnerId = await this.authenticationDataAccess.getUserIdWithToken(bidInformationJSON.token);
+        if (!(await Project.isThereAnyProjectsWithId(bidInformationJSON.projectId))) {
             return "there is not any projects with this Id";
         }
         let project;
         project = await Project.getProjectWithProjectId(bidInformationJSON.projectId);
         if (!project.getIsActive()) {
             return "project has been expired";
-        } else if (bidInformationJSON.biddingUser === project.getOwnerId()) {
+        } else if (tokenOwnerId === project.getOwnerId()) {
             return "you can't bid your own project";
         } else if (bidInformationJSON.bidAmount > project.getBudget()) {
             return "your bidding budget is greater than projects budget";
-        } else if (!(await this.userHasRequiredSkillsForProject(project.getSkills()))) {
+        } else if (!(await this.userHasRequiredSkillsForProject(tokenOwnerId, project.getSkills()))) {
             return "you don't have enough skills for this project";
-        } else if (project.isThisUserIdSubmittedABid(this.loggedInUser.getId())) {
+        } else if (project.isThisUserIdSubmittedABid(tokenOwnerId)) {
             return "you cannot submit a bid more than once";
         }
-        return await this.addBidOfferToProjectBidList(project, bidInformationJSON.bidAmount);
+        return await this.addBidOfferToProjectBidList(tokenOwnerId, project, bidInformationJSON.bidAmount);
     }
 
     async computePointForBidder(user, project, userBudget) {
@@ -399,32 +501,35 @@ class Application {
     }
 
     async handleAuction(auctionInformationJSON) {
+        let tokenOwnerId = await this.authenticationDataAccess.getUserIdWithToken(auctionInformationJSON.token);
         let project = await Project.getProjectWithProjectIdWithActive(auctionInformationJSON.projectId, true);
         if (project === undefined) {
             return "there is not any projects with this id";
         } else if (project.isActive === false) {
             return "there is not any active projects with this id";
-        } else if (project.getOwnerId() !== this.loggedInUser.getId()) {
+        } else if (project.getOwnerId() !== tokenOwnerId) {
             return "you can not auction a project which you are not its owner";
         }
         return await this.getAuctionWinner(auctionInformationJSON.projectId);
     }
 
     async endorseSkill(endorseAUserSkillJSON) {
-        let user;
+        let user, tokenOwnerUser;
+        tokenOwnerUser = await User.getUserWithToken(endorseAUserSkillJSON.token, this.authenticationDataAccess);
         user = await User.getUserWithId(endorseAUserSkillJSON.endorsedUserId);
         if (user === undefined) {
             return "there is not any users with this id";
-        } else if (endorseAUserSkillJSON.endorsedUserId === this.loggedInUser.getId()) {
+        } else if (endorseAUserSkillJSON.endorsedUserId === tokenOwnerUser.getId()) {
             return "you can not endorse your own skill";
         }
 
         if (!(await user.isThisUserHasThisSkill(endorseAUserSkillJSON.skillName))) {
             return "user don't have this skill";
-        } else if (await this.loggedInUser.isThisUserEndorsedThisSkillForThisUser(endorseAUserSkillJSON.skillName, user.getId())) {
+        } else if (await tokenOwnerUser.isThisUserEndorsedThisSkillForThisUser(endorseAUserSkillJSON.skillName, user.getId())) {
             return "you can not endorse this skill for this user more than once";
         }
-        await this.loggedInUser.addToEndorsedOtherUsersSkillsList({
+
+        await tokenOwnerUser.addToEndorsedOtherUsersSkillsList({
             "endorsedUserId": user.getId(),
             "skillName": endorseAUserSkillJSON.skillName
         });
@@ -444,11 +549,13 @@ class Application {
         return allUsersInformation;
     }
 
-    async showUserProfile() {
-        return "----------------------\n" + await this.loggedInUser.getUserSummary() + "----------------------\n";
+    async showUserProfile(showProfileJSON) {
+        let tokenOwnerUser;
+        tokenOwnerUser = await User.getUserWithToken(showProfileJSON.token, this.authenticationDataAccess);
+        return "----------------------\n" + await tokenOwnerUser.getUserSummary() + "----------------------\n";
     }
 
-    async checkUserBidNeedThisSkill(skillName) {
+    async checkUserBidNeedThisSkill(tokenOwnerUser, skillName) {
         let allProjects;
         allProjects = await Project.getAllProjects();
         for (let i = 0; i < allProjects.length; i++) {
@@ -456,7 +563,7 @@ class Application {
             let userSubmittedBid = false;
             let projectNeedThisSkill = false;
             let temp = project.getBidOffers().find(bidOffer => {
-                return bidOffer.biddingUser === this.loggedInUser.getId() && project.getIsActive();
+                return bidOffer.biddingUser === tokenOwnerUser.getId() && project.getIsActive();
             });
             if (temp !== undefined)
                 userSubmittedBid = true;
@@ -475,11 +582,11 @@ class Application {
         return "skill removed successfully";
     }
 
-    async setNewSkillsAfterRemovingASkill(skillName) {
-        await this.loggedInUser.removeSkill(skillName);
+    async setNewSkillsAfterRemovingASkill(tokenOwnerUser, skillName) {
+        await tokenOwnerUser.removeSkill(skillName);
     }
 
-    async setNewEndorseListAfterRemoveASkill(skillName) {
+    async setNewEndorseListAfterRemoveASkill(tokenOwnerUser, skillName) {
         let allUsers;
         allUsers = await User.getAllUsers();
         for (let i = 0; i < allUsers.length; i++) {
@@ -487,7 +594,7 @@ class Application {
             let endorsedOtherUsersSkillsList;
             endorsedOtherUsersSkillsList = await user.getEndorsedOtherUsersSkillsList();
             let newEndorsedOtherUsersSkillsList = endorsedOtherUsersSkillsList.filter(endorsedObject => {
-                if (!(endorsedObject.endorsedUserId === this.loggedInUser.getId() && endorsedObject.skillName === skillName)) {
+                if (!(endorsedObject.endorsedUserId === tokenOwnerUser.getId() && endorsedObject.skillName === skillName)) {
                     return endorsedObject;
                 }
             });
@@ -496,24 +603,28 @@ class Application {
     }
 
     async removeSkill(skillJSON) {
-        if (!(await this.loggedInUser.isThisUserHasThisSkill(skillJSON.skillName)))
+        let tokenOwnerUser;
+        tokenOwnerUser = await User.getUserWithToken(skillJSON.token, this.authenticationDataAccess);
+        if (!(await tokenOwnerUser.isThisUserHasThisSkill(skillJSON.skillName)))
             return "you don't have this skill";
-        let removeSkillMessage = await this.checkUserBidNeedThisSkill(skillJSON.skillName);
+        let removeSkillMessage = await this.checkUserBidNeedThisSkill(tokenOwnerUser, skillJSON.skillName);
         if (removeSkillMessage === "you cannot remove this skill because you bid for some project which needed this skill")
             return removeSkillMessage;
 
-        await this.setNewSkillsAfterRemovingASkill(skillJSON.skillName);
-        await this.setNewEndorseListAfterRemoveASkill(skillJSON.skillName);
+        await this.setNewSkillsAfterRemovingASkill(tokenOwnerUser, skillJSON.skillName);
+        await this.setNewEndorseListAfterRemoveASkill(tokenOwnerUser, skillJSON.skillName);
         return removeSkillMessage;
     }
 
-    async getAllAvailableProjectsInformationForUser() {
+    async getAllAvailableProjectsInformationForUser(seeAllAvailableProjectsInformationJSON) {
+        let tokenOwnerUser;
+        tokenOwnerUser = await User.getUserWithToken(seeAllAvailableProjectsInformationJSON.token, this.authenticationDataAccess);
         let allProjectsSummary = "----------------------\n", allProjects;
         allProjects = await Project.getAllProjects();
         for (let i = 0; i < allProjects.length; i++) {
             let project = allProjects[i];
             let condition = await this.userHasRequiredSkillsForProject(project.getSkills());
-            if (condition && this.loggedInUser.getId() !== project.getOwnerId() && project.getIsActive()) {
+            if (condition && tokenOwnerUser.getId() !== project.getOwnerId() && project.getIsActive()) {
                 allProjectsSummary += project.getProjectSummary();
                 allProjectsSummary += "----------------------\n";
             }
@@ -539,7 +650,7 @@ class Application {
     }
 
     isThisSkillInSkillsSet(skill) {
-        let flag = this.skillsSet.find(skillInSkillsSet => {
+        let flag = Application.skillsSet.find(skillInSkillsSet => {
             return skillInSkillsSet.skillName === skill.skillName;
         });
         return flag !== undefined;
@@ -547,20 +658,27 @@ class Application {
     }
 
     async addSkill(skillJSON) {
+        let tokenOwnerUser;
+        tokenOwnerUser = await User.getUserWithToken(skillJSON.token, this.authenticationDataAccess);
         if (!this.isThisSkillInSkillsSet(skillJSON)) {
             return "there is not any skills in skills set with this name";
-        } else if (await this.loggedInUser.isThisUserHasThisSkill(skillJSON.skillName)) {
+        } else if (await tokenOwnerUser.isThisUserHasThisSkill(skillJSON.skillName)) {
             return "you already have this skill";
         }
-        await this.loggedInUser.addSkill(skillJSON);
+        await tokenOwnerUser.addSkill(skillJSON);
         return "skill added successfully";
     }
 }
 
 (async () => {
+    const job = schedule.scheduleJob({hour: 0, minute: 0, second: 3}, function () {
+        console.log('Time for tea!');
+    });
+    // Application.checkProjectsDeadlinePassed()
     const application = new Application();
-    // setInterval(Application.checkProjectsDeadlinesPassed, 120000);
+    // setInterval(application.checkProjectsDeadlinesPassed, 120000);
     await application.runApplication(8080);
+    process.exit(1)
 })()
 
 

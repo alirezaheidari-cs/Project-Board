@@ -1,12 +1,14 @@
 // const SqliteDatabase = require('../DataAccess/SqliteDatabase');
+const CryptoJS = require("crypto-js");
 let SqliteDatabase;
+
 
 class User {
     static connectToDatabase(sqliteDatabase) {
         SqliteDatabase = sqliteDatabase;
     }
 
-    constructor(id, firstName, lastName, jobTitle, skills, activeProjectIds, inactiveProjectsIds, takenProjectsIds, bio, profilePictureURL, endorsedOtherUsersSkillsList) {
+    constructor(id, firstName, lastName, jobTitle, password, skills, activeProjectIds, inactiveProjectsIds, takenProjectsIds, bio, profilePictureURL, endorsedOtherUsersSkillsList) {
         this.id = id;
         this.firstName = firstName;
         this.lastName = lastName;
@@ -18,6 +20,12 @@ class User {
         this.bio = bio;
         this.profilePictureURL = profilePictureURL;
         this.endorsedOtherUsersSkillsList = endorsedOtherUsersSkillsList;
+        this.password = password;
+    }
+
+    static async getUserWithToken(token , authenticationDataAccess){
+        let id = await authenticationDataAccess.getUserIdWithToken(token);
+        return await SqliteDatabase.getUserWithId(id);
     }
 
     static async getAllUsers() {

@@ -3,7 +3,7 @@ const app = express();
 
 
 class Server {
-    static availableSkills = [{skillName: "HTTP"}, {skillName: "CSS"}, {skillName: "JAVA"}, {skillName: "CPP"}, {skillName: "C"}, {skillName: "JS"}];
+    static availableSkills = [{skillName: "HTML"}, {skillName: "CSS"}, {skillName: "JAVA"}, {skillName: "CPP"}, {skillName: "C"}, {skillName: "JS"}];
     // static allProjects = [{
     //     id: 11,
     //     title: "project1",
@@ -51,9 +51,6 @@ class Server {
 
         app.get('/skill', (req, res) => {
             res.json(Server.availableSkills);
-        });
-        app.get('/project', (req, res) => {
-            res.json(Server.allProjects);
         });
     }
 }
