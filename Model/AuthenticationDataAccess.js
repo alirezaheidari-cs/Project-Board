@@ -7,10 +7,9 @@ class AuthenticationDataAccess {
         this.port = port;
     }
 
-
     async sendRegisterInformationToServer(id, password) {
         try {
-            const response = await axios.post('http://localhost:9000/register', {
+            const response = await axios.post('http://localhost:' + this.port + '/register', {
                 id: id,
                 password: password
             });
@@ -21,9 +20,9 @@ class AuthenticationDataAccess {
         }
     }
 
-    async sendLoginInformationToServer(id,password) {
+    async sendLoginInformationToServer(id, password) {
         try {
-            const response = await axios.post('http://localhost:9000/login', {
+            const response = await axios.post('http://localhost:' + this.port + '/login', {
                 id: id,
                 password: password
             });
@@ -36,7 +35,7 @@ class AuthenticationDataAccess {
 
     async getUserIdWithToken(token) {
         try {
-            const response = await axios.post('http://localhost:9000/getUserIdWithToken', {
+            const response = await axios.post('http://localhost:' + this.port + '/getUserIdWithToken', {
                 token: token
             });
             return response.data.id;
@@ -46,12 +45,12 @@ class AuthenticationDataAccess {
         }
     }
 
-    async isTokenExpired(token){
+    async isTokenExpired(token) {
         try {
-            const response = await axios.post('http://localhost:9000/isTokenExpired', {
+            const response = await axios.post('http://localhost:' + this.port + '/isTokenExpired', {
                 token: token
             });
-            if(response.data.isExpired === "True")
+            if (response.data.isExpired === "True")
                 return true
             return false;
 
@@ -60,13 +59,6 @@ class AuthenticationDataAccess {
         }
     }
 }
-
-// (async () => {
-//     let a = new AuthenticationDataAccess(9000);
-//     // let bb= await a.sendRegisterInformationToServer("ali" , "heidar")
-//     let b = await a.isTokenExpired( "heidari")
-//     console.log(b)
-// })()
 
 module.exports = AuthenticationDataAccess
 

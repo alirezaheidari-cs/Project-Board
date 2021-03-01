@@ -1,5 +1,4 @@
 // const SqliteDatabase = require('../DataAccess/SqliteDatabase');
-const CryptoJS = require("crypto-js");
 let SqliteDatabase;
 
 
@@ -56,10 +55,6 @@ class User {
         await SqliteDatabase.setUserEndorsedOtherUsersSkillsList(this.id, endorsedOtherUsersSkillsList);
     }
 
-    getId() {
-        return this.id;
-    }
-
     async addProjectToTakenProjectsIds(projectId) {
         await SqliteDatabase.addProjectToTakenProjectsIds(this.id, projectId);
     }
@@ -86,6 +81,7 @@ class User {
     }
 
     async addToEndorsedOtherUsersSkillsList(endorsedObject) {
+
         await SqliteDatabase.addUserEndorsedOtherUsersSkillsList(this.id, endorsedObject);
     }
 
@@ -112,7 +108,7 @@ class User {
         await SqliteDatabase.addUserSkill(this.id, skill);
     }
 
-    async increaseSkillPoints(endorsedUserId, skillName) {
+    async increaseSkillPoints(skillName) {
         let skills;
         skills = await this.getSkills();
         skills.forEach(skill => {
@@ -120,7 +116,7 @@ class User {
                 skill.points = skill.points + 1;
             }
         });
-        await SqliteDatabase.increaseSkillPoints(this.id, endorsedUserId, skillName);
+        await SqliteDatabase.increaseSkillPoints(this.id, skillName);
     }
 
     async getUserSummary() {
@@ -134,6 +130,10 @@ class User {
         summary = summary.concat("]\n");
         summary = summary.concat("bio: " + userGeneralInformation.bio + "\n");
         return summary;
+    }
+
+    getId() {
+        return this.id;
     }
 }
 

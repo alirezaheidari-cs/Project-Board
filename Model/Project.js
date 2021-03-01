@@ -55,8 +55,9 @@ class Project {
             project.bidOffers, project.description, project.deadline, project.winnerId, project.imageURL, project.isActive);
     }
 
-    getId() {
-        return this.id;
+    async addBidOffers(bidOffer) {
+        await SqliteDatabase.addProjectBidOffer(this.id, bidOffer);
+        this.bidOffers.push(bidOffer);
     }
 
     async setWinnerId(winnerId) {
@@ -64,22 +65,21 @@ class Project {
         this.winnerId = winnerId;
     }
 
-    getIsActive() {
-        return this.isActive;
-    }
-
     async setIsActive(isActive) {
         await SqliteDatabase.setProjectIsActive(this.id, isActive);
         this.isActive = isActive;
     }
 
-    getOwnerId() {
-        return this.ownerId;
+    getIsActive() {
+        return this.isActive;
     }
 
-    async addBidOffers(bidOffer) {
-        await SqliteDatabase.addProjectBidOffer(this.id, bidOffer);
-        this.bidOffers.push(bidOffer);
+    getId() {
+        return this.id;
+    }
+
+    getOwnerId() {
+        return this.ownerId;
     }
 
     getBidOffers() {

@@ -4,12 +4,14 @@ const User = require('../Model/User.js');
 const Project = require('../Model/Project.js');
 const readlineSync = require('readline-sync');
 const AuthenticationDataAccess = require('../Model/AuthenticationDataAccess.js')
-const schedule = require("node-schedule");
+const cron = require("node-cron");
+let counter = 0;
+var stdin = process.openStdin();
+
 
 /*
-
 login {"id":"user2","password":"alireza"}
-addProject {"id":3,"title":"project3","skills":[{"skillName":"HTML","points":20}],"budget":100,"ownerId":"user1","description":"goood","deadline":"2021/10/10","imageURL":"asfaa","token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MTQzMzU0NDYsImlkIjoidXNlcjIifQ.LvWvqixriRccGcpEdFdCQVwX9xU0aWcIvEVVYpOJWF0"}
+addProject {"id":3,"title":"project3","skills":[{"skillName":"HTML","points":20}],"budget":100,"ownerId":"user1","description":"goood","deadline":"2021/10/10","imageURL":"asfaa","token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MTQ0NjM5MjIsImlkIjoidXNlcjUifQ.RY_fJwU4IeBAuF0Kp05_Wr2VIESqQuDdbc2kAyIJAu8"}
 bid {"biddingUser":"user3","projectId":1,"bidAmount":10,"token":""}
 auction {"id":"user1","projectId":1,"token":""}
 editProfile {"token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MTQyNzMwMjcsImlkIjoidXNlcjIifQ.dU2hYhhDNHMhofKCHl8hTWSysTHygbHXLf4i05OIISo"}
@@ -29,21 +31,30 @@ register {"id":"user3","firstName":"hamid","lastName":"yaghobi","jobTitle":"AI",
 register {"id":"user4","firstName":"hamid","lastName":"yaghobi","jobTitle":"AI","password":"alireza","bio":"olympiad","profilePictureURL":"gog"}
 register {"id":"user5","firstName":"hamid","lastName":"yaghobi","jobTitle":"AI","password":"alireza","bio":"olympiad","profilePictureURL":"gog"}
 
-addProject {"id":1,"title":"project1","skills":[{"skillName":"CSS","points":20}],"budget":10,"description":"goood","deadline":"2021/10/10","imageURL":"asfaa","token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MTQzMzE5MzAsImlkIjoidXNlcjIifQ.jGPmBCxTDxiCr-McG946ANoGpRlMkec6Y0I0bWdveEg"}
-addProject {"id":2,"title":"project2","skills":[{"skillName":"HTML","points":20},{"skillName":"CSS","points":20}],"budget":1,"description":"goood","deadline":"2021/10/10","imageURL":"asfaa","token":""}
+addProject {"id":1,"title":"project1","skills":[{"skillName":"CSS","points":20}],"budget":10,"description":"goood","deadline":"2021/10/10","imageURL":"asfaa","token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MTQ0NjUxNTIsImlkIjoidXNlcjEifQ.rvKcD9f6iHK-VYqe4mxfwAwe5h_QgUNPeAlkKGoIbuc"}
+addProject {"id":2,"title":"project2","skills":[{"skillName":"HTML","points":20},{"skillName":"CSS","points":20}],"budget":1,"description":"goood","deadline":"2021/10/10","imageURL":"asfaa","token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MTQ0NjQwODYsImlkIjoidXNlcjEifQ.ThWSyPW6NmcfUgREinrAWOyBdWcF9h01jLeZu_z4SXw"}
+
+addProject {"id":3,"title":"project2","skills":[{"skillName":"HTML","points":20},{"skillName":"CSS","points":20}],"budget":1,"description":"goood","deadline":"2010/10/10","imageURL":"asfaa","token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MTQ0NjUxNTIsImlkIjoidXNlcjEifQ.rvKcD9f6iHK-VYqe4mxfwAwe5h_QgUNPeAlkKGoIbuc"}
+
+
 login {"id":"user1","password":"aliredza"}
 addProject {"id":3,"title":"project3","skills":[{"skillName":"HTML","points":20}],"budget":100,"ownerId":"user1","description":"goood","deadline":"2021/10/10","imageURL":"asfaa","token":""}
-bid {"projectId":1,"bidAmount":10,"token":""}
-auction {"projectId":1,"token":""}
-editProfile {"token":""}
+bid {"projectId":1,"bidAmount":1,"token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MTQ0NjUyMDksImlkIjoidXNlcjMifQ.m3twofBtWFWTReKY3mInNVofV4M0ywc5WHoQlPA8bU8"}
+auction {"projectId":1,"token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MTQ0NjUxNTIsImlkIjoidXNlcjEifQ.rvKcD9f6iHK-VYqe4mxfwAwe5h_QgUNPeAlkKGoIbuc"}
+editProfile {"token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MTQ0NjUxNTIsImlkIjoidXNlcjEifQ.rvKcD9f6iHK-VYqe4mxfwAwe5h_QgUNPeAlkKGoIbuc"}
 removeSkill {"skillName":"CSS","token":""}
-seeAllUsersInformation {"token":""}
-endorseAUserSkill {"endorsedUserId":"user1","skillName":"JS","token":""}
-seeSpecificProjectInformation {"id":3,"token":""}
-seeSpecificUserInformation {"id":"user44","token":""}
-addSkill {"skillName":"CSS","points":120,"token":""}
+seeAllUsersInformation {"token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MTQ0MTMyMDksImlkIjoidXNlcjEifQ.n3Zfb3VmgfDzKi-w-zeSat1ITZAA4ykaDcH48jLk6VM"}
+endorseAUserSkill {"endorsedUserId":"user3","skillName":"CSS","token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MTQ0MTMyMDksImlkIjoidXNlcjEifQ.n3Zfb3VmgfDzKi-w-zeSat1ITZAA4ykaDcH48jLk6VM"}
+seeSpecificProjectInformation {"id":3,"token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MTQ0MTMyMDksImlkIjoidXNlcjEifQ.n3Zfb3VmgfDzKi-w-zeSat1ITZAA4ykaDcH48jLk6VM"}
+seeSpecificUserInformation {"id":"user4" ,"token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MTQ0MTMyMDksImlkIjoidXNlcjEifQ.n3Zfb3VmgfDzKi-w-zeSat1ITZAA4ykaDcH48jLk6VM"}
+addSkill {"skillName":"HTML","points":120,"token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MTQ0NjUyMDksImlkIjoidXNlcjMifQ.m3twofBtWFWTReKY3mInNVofV4M0ywc5WHoQlPA8bU8"}
 showProfile {"token":""}
 register {"id":"user1","firstName":"hamid","lastName":"yaghobi","jobTitle":"AI","password":"alireza","bio":"olympiad","profilePictureURL":"gog"}
+
+eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MTQ0NjUyMDksImlkIjoidXNlcjMifQ.m3twofBtWFWTReKY3mInNVofV4M0ywc5WHoQlPA8bU8
+
+
+eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MTQ0NjUxNTIsImlkIjoidXNlcjEifQ.rvKcD9f6iHK-VYqe4mxfwAwe5h_QgUNPeAlkKGoIbuc
 
 */
 class Application {
@@ -53,7 +64,9 @@ class Application {
     static editProfileMenuCommands = ["register", "logout", "addSkill",
         "removeSkill", "back", "showProfile", "seeAvailableSkills", "end"];
     static skillsSet;
-
+    static authenticationPort = 9000;
+    static serverPort = 8080;
+    static DatabasePath = '../DataAccess/DB/';
 
     constructor() {
         this.currentMenu = "loginRegisterMenu";
@@ -64,30 +77,22 @@ class Application {
         this.currentMenu = menu;
     }
 
-    async getSkillsAndProjectsFromServer(port) {
-        const serverDataAccess = new ServerDataAccess(port);
+    static async getSkillsAndProjectsFromServer() {
+        const serverDataAccess = new ServerDataAccess(Application.serverPort);
         Application.skillsSet = await serverDataAccess.getSkillsFromServer();
-        // await serverDataAccess.getProjectsFromServer();
-        // let allProjectsDataJSON = await serverDataAccess.getProjectsFromServer();
-        // await this.convertProjectJSONToProjectObject(allProjectsDataJSON);
     }
 
-    async runDatabase(path) {
+    static async runDatabase() {
         const dataBaseHandler = new DatabaseHandler();
-        await dataBaseHandler.runDataBase(path);
+        await dataBaseHandler.runDataBase(Application.DatabasePath);
     }
 
-    async runApplication(port) {
-        await this.runDatabase('../DataAccess/DB/');
-        await this.getSkillsAndProjectsFromServer(port);
-        this.authenticationDataAccess = await new AuthenticationDataAccess(9000)
-        console.log("skills are ready");
-
-        await this.checkProjectsDeadlinesPassed();
+    async runApplication() {
+        this.authenticationDataAccess = new AuthenticationDataAccess(Application.authenticationPort)
         await this.readCommandsFromConsole();
     }
 
-    async convertProjectJSONToProjectObject(allProjectsDataJSON) {
+    static async convertProjectJSONToProjectObject(allProjectsDataJSON) {
         if (allProjectsDataJSON !== undefined) {
             for (let i = 0; i < allProjectsDataJSON.length; i++) {
                 let projectData = allProjectsDataJSON[i];
@@ -98,25 +103,34 @@ class Application {
         }
     }
 
-    async checkProjectsDeadlinesPassed() {
+    static async checkProjectsDeadlinesPassed() {
         let currentDate = new Date(), allProjects;
         allProjects = await Project.getAllProjects();
         for (let i = 0; i < allProjects.length; i++) {
             let project = allProjects[i];
             if (project.deadline < currentDate.getTime() && project.getIsActive()) {
-                await this.getAuctionWinner(project.getId());
+                await Application.getAuctionWinner(project.getId());
             }
         }
     }
 
     async readCommandsFromConsole() {
         let inputCommand = "";
-        while (true) {
-            inputCommand = await readlineSync.question('');
-            if (inputCommand === "end")
-                break;
-            await this.handleCommandsWithMenu(inputCommand, this.currentMenu);
-        }
+        let application = this
+        stdin.addListener("data", async function (input) {
+            inputCommand = input.toString().trim();
+            if (inputCommand === "end") {
+                process.exit(1)
+            }
+            await application.handleCommandsWithMenu(inputCommand, application.currentMenu);
+        });
+
+        // while (true) {
+        //     console.log(counter)
+        //     inputCommand = await readlineSync.question('');
+        //     if (inputCommand === "end")
+        //         break;
+        // }
     }
 
     static getJSONPartOfCommandWithGivenRegex(inputCommand, regex, message) {
@@ -432,7 +446,7 @@ class Application {
         return await this.addBidOfferToProjectBidList(tokenOwnerId, project, bidInformationJSON.bidAmount);
     }
 
-    async computePointForBidder(user, project, userBudget) {
+    static async computePointForBidder(user, project, userBudget) {
         let userSkillsArray;
         userSkillsArray = await user.getSkills();
         let projectRequiredSkillsArray = project.getSkills();
@@ -449,7 +463,7 @@ class Application {
         return 100000 * sum + project.getBudget() - userBudget;
     }
 
-    async getUsersFromBidOffersList(bidOffers) {
+    static async getUsersFromBidOffersList(bidOffers) {
         let biddersUsers = [];
         for (let i = 0; i < bidOffers.length; i++) {
             let bidOffer = bidOffers[i];
@@ -459,17 +473,17 @@ class Application {
         return biddersUsers;
     }
 
-    async findAuctionWinnerInBidOffersList(biddersUsers, bidOffers, project) {
+    static async findAuctionWinnerInBidOffersList(biddersUsers, bidOffers, project) {
         let winner = biddersUsers[0];
         let winnerBidJSON = bidOffers.find(bidOffer => {
             return bidOffer.biddingUser === winner.getId()
         });
         let winnerBidAmount = winnerBidJSON.bidAmount;
-        let winnerPoint = await this.computePointForBidder(winner, project, winnerBidAmount);
+        let winnerPoint = await Application.computePointForBidder(winner, project, winnerBidAmount);
         for (let i = 0; i < bidOffers.length; i++) {
             let bidOffer = bidOffers[i];
             let bidderUser = await User.getUserWithId(bidOffer.biddingUser);
-            let bidPoint = await this.computePointForBidder(bidderUser, project, bidOffer.bidAmount);
+            let bidPoint = await Application.computePointForBidder(bidderUser, project, bidOffer.bidAmount);
             if (winnerPoint < bidPoint) {
                 winner = bidderUser;
                 winnerPoint = bidPoint;
@@ -478,22 +492,21 @@ class Application {
         return winner;
     }
 
-    async getAuctionWinner(projectId) {
+    static async getAuctionWinner(projectId) {
         let project, projectOwnerUser;
         project = await Project.getProjectWithProjectId(projectId);
         projectOwnerUser = await User.getUserWithId(project.getOwnerId());
         await project.setIsActive(false);
         await projectOwnerUser.removeProject(projectId);
         let bidOffers = project.getBidOffers();
-
-        let biddersUsers = await this.getUsersFromBidOffersList(bidOffers);
+        let biddersUsers = await Application.getUsersFromBidOffersList(bidOffers);
 
         if (biddersUsers.length === 0) {
             await project.setWinnerId(null);
             return "no one wins for project for id: " + projectId;
         }
 
-        let winnerUser = await this.findAuctionWinnerInBidOffersList(biddersUsers, bidOffers, project);
+        let winnerUser = await Application.findAuctionWinnerInBidOffersList(biddersUsers, bidOffers, project);
 
         await project.setWinnerId(winnerUser.getId());
         await winnerUser.addProjectToTakenProjectsIds(projectId);
@@ -510,7 +523,7 @@ class Application {
         } else if (project.getOwnerId() !== tokenOwnerId) {
             return "you can not auction a project which you are not its owner";
         }
-        return await this.getAuctionWinner(auctionInformationJSON.projectId);
+        return await Application.getAuctionWinner(auctionInformationJSON.projectId);
     }
 
     async endorseSkill(endorseAUserSkillJSON) {
@@ -533,7 +546,7 @@ class Application {
             "endorsedUserId": user.getId(),
             "skillName": endorseAUserSkillJSON.skillName
         });
-        await user.increaseSkillPoints(endorseAUserSkillJSON.endorsedUserId, endorseAUserSkillJSON.skillName);
+        await user.increaseSkillPoints(endorseAUserSkillJSON.skillName);
         return "endorsed successfully";
     }
 
@@ -668,18 +681,25 @@ class Application {
         await tokenOwnerUser.addSkill(skillJSON);
         return "skill added successfully";
     }
+
+}
+
+function schedulerForCheckProjectsDeadline() {
+    cron.schedule('*/2 * * * *', async () => {
+        await Application.checkProjectsDeadlinesPassed();
+    }, {
+        scheduled: true
+    });
 }
 
 (async () => {
-    const job = schedule.scheduleJob({hour: 0, minute: 0, second: 3}, function () {
-        console.log('Time for tea!');
-    });
-    // Application.checkProjectsDeadlinePassed()
+    await Application.runDatabase();
+    schedulerForCheckProjectsDeadline();
+    await Application.getSkillsAndProjectsFromServer();
+    console.log("skills are ready");
     const application = new Application();
-    // setInterval(application.checkProjectsDeadlinesPassed, 120000);
-    await application.runApplication(8080);
-    process.exit(1)
-})()
+    await application.runApplication();
+})();
 
 
 module.exports = Application;
