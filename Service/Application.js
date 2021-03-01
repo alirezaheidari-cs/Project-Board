@@ -2,15 +2,15 @@ const ServerDataAccess = require('../Model/ServerDataAccess.js');
 const DatabaseHandler = require('../Model/DatabaseHandler.js');
 const User = require('../Model/User.js');
 const Project = require('../Model/Project.js');
-const readlineSync = require('readline-sync');
 const AuthenticationDataAccess = require('../Model/AuthenticationDataAccess.js')
 const cron = require("node-cron");
-let counter = 0;
 var stdin = process.openStdin();
-
+const Skill = require('../Model/Skill');
+const BidOffer = require('../Model/BidOffer');
+const Endorsement = require('../Model/Endorsement');
 
 /*
-login {"id":"user2","password":"alireza"}
+login {"id":"user1","password":"alireza"}
 addProject {"id":3,"title":"project3","skills":[{"skillName":"HTML","points":20}],"budget":100,"ownerId":"user1","description":"goood","deadline":"2021/10/10","imageURL":"asfaa","token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MTQ0NjM5MjIsImlkIjoidXNlcjUifQ.RY_fJwU4IeBAuF0Kp05_Wr2VIESqQuDdbc2kAyIJAu8"}
 bid {"biddingUser":"user3","projectId":1,"bidAmount":10,"token":""}
 auction {"id":"user1","projectId":1,"token":""}
@@ -31,30 +31,32 @@ register {"id":"user3","firstName":"hamid","lastName":"yaghobi","jobTitle":"AI",
 register {"id":"user4","firstName":"hamid","lastName":"yaghobi","jobTitle":"AI","password":"alireza","bio":"olympiad","profilePictureURL":"gog"}
 register {"id":"user5","firstName":"hamid","lastName":"yaghobi","jobTitle":"AI","password":"alireza","bio":"olympiad","profilePictureURL":"gog"}
 
-addProject {"id":1,"title":"project1","skills":[{"skillName":"CSS","points":20}],"budget":10,"description":"goood","deadline":"2021/10/10","imageURL":"asfaa","token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MTQ0NjUxNTIsImlkIjoidXNlcjEifQ.rvKcD9f6iHK-VYqe4mxfwAwe5h_QgUNPeAlkKGoIbuc"}
+addProject {"id":1,"title":"project1","skills":[{"skillName":"CSS","points":20}],"budget":10,"description":"goood","deadline":"2021/10/10","imageURL":"asfaa","token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MTQ2NTkzMDEsImlkIjoidXNlcjEifQ.d1K5GDINPY2gdiSrx0qSW4z1CKCnRODsPFBVSQmvYk0"}
 addProject {"id":2,"title":"project2","skills":[{"skillName":"HTML","points":20},{"skillName":"CSS","points":20}],"budget":1,"description":"goood","deadline":"2021/10/10","imageURL":"asfaa","token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MTQ0NjQwODYsImlkIjoidXNlcjEifQ.ThWSyPW6NmcfUgREinrAWOyBdWcF9h01jLeZu_z4SXw"}
 
 addProject {"id":3,"title":"project2","skills":[{"skillName":"HTML","points":20},{"skillName":"CSS","points":20}],"budget":1,"description":"goood","deadline":"2010/10/10","imageURL":"asfaa","token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MTQ0NjUxNTIsImlkIjoidXNlcjEifQ.rvKcD9f6iHK-VYqe4mxfwAwe5h_QgUNPeAlkKGoIbuc"}
+eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MTQ2NTkzMDEsImlkIjoidXNlcjEifQ.d1K5GDINPY2gdiSrx0qSW4z1CKCnRODsPFBVSQmvYk0
 
-
-login {"id":"user1","password":"aliredza"}
-addProject {"id":3,"title":"project3","skills":[{"skillName":"HTML","points":20}],"budget":100,"ownerId":"user1","description":"goood","deadline":"2021/10/10","imageURL":"asfaa","token":""}
-bid {"projectId":1,"bidAmount":1,"token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MTQ0NjUyMDksImlkIjoidXNlcjMifQ.m3twofBtWFWTReKY3mInNVofV4M0ywc5WHoQlPA8bU8"}
-auction {"projectId":1,"token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MTQ0NjUxNTIsImlkIjoidXNlcjEifQ.rvKcD9f6iHK-VYqe4mxfwAwe5h_QgUNPeAlkKGoIbuc"}
-editProfile {"token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MTQ0NjUxNTIsImlkIjoidXNlcjEifQ.rvKcD9f6iHK-VYqe4mxfwAwe5h_QgUNPeAlkKGoIbuc"}
-removeSkill {"skillName":"CSS","token":""}
+login {"id":"user4","password":"alireza"}
+addProject {"id":3,"title":"project3","skills":[{"skillName":"HTML","points":20}],"budget":100,"description":"goood","deadline":"2021/10/10","imageURL":"asfaa","token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MTQ2NjQwMjIsImlkIjoidXNlcjEifQ.3L-vDOgS75W9sNqng50oNjcq7WSfwmW0iWsG7q3zCwo"}
+bid {"projectId":3,"bidAmount":1,"token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MTQ2NjQxNjIsImlkIjoidXNlcjMifQ.zhhI9mlFkzORGH3m1n_IbpLG7pYlYiwZet5lVzeFgAk"}
+auction {"projectId":3,"token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MTQ2NjQwMjIsImlkIjoidXNlcjEifQ.3L-vDOgS75W9sNqng50oNjcq7WSfwmW0iWsG7q3zCwo"}
+editProfile {"token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MTQ2NjQxNjIsImlkIjoidXNlcjMifQ.zhhI9mlFkzORGH3m1n_IbpLG7pYlYiwZet5lVzeFgAk"}
+removeSkill {"skillName":"HTML","token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MTQ2NjIyMjUsImlkIjoidXNlcjEifQ.aePlDTRo-1NOtLJsvva50qu2iteG6hUS3EtIPSFnRlY"}
 seeAllUsersInformation {"token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MTQ0MTMyMDksImlkIjoidXNlcjEifQ.n3Zfb3VmgfDzKi-w-zeSat1ITZAA4ykaDcH48jLk6VM"}
-endorseAUserSkill {"endorsedUserId":"user3","skillName":"CSS","token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MTQ0MTMyMDksImlkIjoidXNlcjEifQ.n3Zfb3VmgfDzKi-w-zeSat1ITZAA4ykaDcH48jLk6VM"}
+endorseAUserSkill {"endorsedUserId":"user3","skillName":"HTML","token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MTQ2NjQyMzMsImlkIjoidXNlcjQifQ.Cvyp9s0HOeEPgUkTl3kR16dQwwuPPVDCgQsIMeWQwxk"}
 seeSpecificProjectInformation {"id":3,"token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MTQ0MTMyMDksImlkIjoidXNlcjEifQ.n3Zfb3VmgfDzKi-w-zeSat1ITZAA4ykaDcH48jLk6VM"}
 seeSpecificUserInformation {"id":"user4" ,"token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MTQ0MTMyMDksImlkIjoidXNlcjEifQ.n3Zfb3VmgfDzKi-w-zeSat1ITZAA4ykaDcH48jLk6VM"}
-addSkill {"skillName":"HTML","points":120,"token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MTQ0NjUyMDksImlkIjoidXNlcjMifQ.m3twofBtWFWTReKY3mInNVofV4M0ywc5WHoQlPA8bU8"}
-showProfile {"token":""}
+addSkill {"skillName":"HTML","points":19,"token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MTQ2NjQxNjIsImlkIjoidXNlcjMifQ.zhhI9mlFkzORGH3m1n_IbpLG7pYlYiwZet5lVzeFgAk"}
+showProfile {"token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MTQ2MzU5MzIsImlkIjoidXNlcjQifQ.WvqiB74wjGlPNOc6ug84xEkFGuigcKZFERiwJmLRzJY"}
 register {"id":"user1","firstName":"hamid","lastName":"yaghobi","jobTitle":"AI","password":"alireza","bio":"olympiad","profilePictureURL":"gog"}
 
-eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MTQ0NjUyMDksImlkIjoidXNlcjMifQ.m3twofBtWFWTReKY3mInNVofV4M0ywc5WHoQlPA8bU8
 
+eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MTQ2NjQwMjIsImlkIjoidXNlcjEifQ.3L-vDOgS75W9sNqng50oNjcq7WSfwmW0iWsG7q3zCwo
+eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MTQ2NjQwNzksImlkIjoidXNlcjIifQ.vGcn70H1hP1dE5DbVL7VXaY0tJLaQhA9nwWnE9TBnzg
+eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MTQ2NjQxNjIsImlkIjoidXNlcjMifQ.zhhI9mlFkzORGH3m1n_IbpLG7pYlYiwZet5lVzeFgAk
+eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MTQ2NjQyMzMsImlkIjoidXNlcjQifQ.Cvyp9s0HOeEPgUkTl3kR16dQwwuPPVDCgQsIMeWQwxk
 
-eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MTQ0NjUxNTIsImlkIjoidXNlcjEifQ.rvKcD9f6iHK-VYqe4mxfwAwe5h_QgUNPeAlkKGoIbuc
 
 */
 class Application {
@@ -66,7 +68,6 @@ class Application {
     static skillsSet;
     static authenticationPort = 9000;
     static serverPort = 8080;
-    static DatabasePath = '../DataAccess/DB/';
 
     constructor() {
         this.currentMenu = "loginRegisterMenu";
@@ -84,7 +85,7 @@ class Application {
 
     static async runDatabase() {
         const dataBaseHandler = new DatabaseHandler();
-        await dataBaseHandler.runDataBase(Application.DatabasePath);
+        await dataBaseHandler.runDataBase();
     }
 
     async runApplication() {
@@ -124,13 +125,6 @@ class Application {
             }
             await application.handleCommandsWithMenu(inputCommand, application.currentMenu);
         });
-
-        // while (true) {
-        //     console.log(counter)
-        //     inputCommand = await readlineSync.question('');
-        //     if (inputCommand === "end")
-        //         break;
-        // }
     }
 
     static getJSONPartOfCommandWithGivenRegex(inputCommand, regex, message) {
@@ -291,7 +285,7 @@ class Application {
             let removeSkillJSON = Application.getJSONPartOfCommandWithGivenRegex(inputCommand, /removeSkill ({.+})/, "remove Skill");
             if (removeSkillJSON === undefined)
                 return removeSkillJSON;
-            if (await this.authenticationDataAccess.isTokenExpired(removeSkillJSON.id, removeSkillJSON.token))
+            if (await this.authenticationDataAccess.isTokenExpired(removeSkillJSON.token))
                 return this.handleLogout();
 
             return await this.removeSkill(removeSkillJSON);
@@ -357,8 +351,7 @@ class Application {
         let user = new User(userInformationJSON.id, userInformationJSON.firstName, userInformationJSON.lastName, userInformationJSON.jobTitle,
             undefined, [], [], [], [], userInformationJSON.bio, userInformationJSON.profilePictureURL, []);
         await User.addUser(user);
-        await this.authenticationDataAccess.sendRegisterInformationToServer(userInformationJSON.id, userInformationJSON.password);
-        return "registration successful";
+        return await this.authenticationDataAccess.sendRegisterInformationToServer(userInformationJSON.id, userInformationJSON.password);
     }
 
     async loginUser(userInformationJSON) {  // id , password ,
@@ -368,9 +361,11 @@ class Application {
             return "there is not any users with this id";
         }
         let responseFromServer = await this.authenticationDataAccess.sendLoginInformationToServer(userInformationJSON.id, userInformationJSON.password);
-        if (responseFromServer.message === "password is wrong")
+        if (responseFromServer.message === "password is wrong") {
             return "password is wrong";
-
+        } else if (responseFromServer.message === "no users with this id") {
+            return "no users with this id";
+        }
         let token = responseFromServer.token;
         this.setCurrentMenu('userAreaMenu');
         return token + "\n" + "login successful";
@@ -381,6 +376,15 @@ class Application {
         return "logged out successfully";
     }
 
+    static convertSkillJSONListToObject(skillsJSON) {
+        let skills = [];
+        for (let i = 0; i < skillsJSON.length; i++) {
+            let skillJSON = skillsJSON[i];
+            skills.push(new Skill(skillJSON.skillName, skillJSON.points));
+        }
+        return skills;
+    }
+
     async addProject(projectInformationJSON) {
         this.setCurrentMenu("userAreaMenu");
         let tokenOwnerId = await this.authenticationDataAccess.getUserIdWithToken(projectInformationJSON.token);
@@ -389,7 +393,8 @@ class Application {
             return "there is a project with this id";
         }
         try {
-            project = new Project(projectInformationJSON.id, projectInformationJSON.title, projectInformationJSON.skills, projectInformationJSON.budget, tokenOwnerId,
+            let skills = Application.convertSkillJSONListToObject(projectInformationJSON.skills);
+            project = new Project(projectInformationJSON.id, projectInformationJSON.title, skills, projectInformationJSON.budget, tokenOwnerId,
                 [], projectInformationJSON.description, (new Date(projectInformationJSON.deadline)).getTime(), null, projectInformationJSON.imageURL, true);
         } catch (e) {
             return "wrong format in json";
@@ -417,11 +422,8 @@ class Application {
     }
 
     async addBidOfferToProjectBidList(tokenOwnerId, project, userBudget) {
-        await project.addBidOffers({
-            "biddingUser": tokenOwnerId,
-            "projectId": project.getId(),
-            "bidAmount": userBudget
-        });
+        let bidOffer = new BidOffer(tokenOwnerId, project.getId(), userBudget);
+        await project.addBidOffers(bidOffer);
         return "your request submitted";
     }
 
@@ -475,10 +477,10 @@ class Application {
 
     static async findAuctionWinnerInBidOffersList(biddersUsers, bidOffers, project) {
         let winner = biddersUsers[0];
-        let winnerBidJSON = bidOffers.find(bidOffer => {
+        let winnerBidObject = bidOffers.find(bidOffer => {
             return bidOffer.biddingUser === winner.getId()
         });
-        let winnerBidAmount = winnerBidJSON.bidAmount;
+        let winnerBidAmount = winnerBidObject.bidAmount;
         let winnerPoint = await Application.computePointForBidder(winner, project, winnerBidAmount);
         for (let i = 0; i < bidOffers.length; i++) {
             let bidOffer = bidOffers[i];
@@ -542,10 +544,7 @@ class Application {
             return "you can not endorse this skill for this user more than once";
         }
 
-        await tokenOwnerUser.addToEndorsedOtherUsersSkillsList({
-            "endorsedUserId": user.getId(),
-            "skillName": endorseAUserSkillJSON.skillName
-        });
+        await tokenOwnerUser.addToEndorsedOtherUsersSkillsList(new Endorsement(user.getId(), tokenOwnerUser.getId(), endorseAUserSkillJSON.skillName));
         await user.increaseSkillPoints(endorseAUserSkillJSON.skillName);
         return "endorsed successfully";
     }
@@ -678,7 +677,7 @@ class Application {
         } else if (await tokenOwnerUser.isThisUserHasThisSkill(skillJSON.skillName)) {
             return "you already have this skill";
         }
-        await tokenOwnerUser.addSkill(skillJSON);
+        await tokenOwnerUser.addSkill(new Skill(skillJSON.skillName, skillJSON.points));
         return "skill added successfully";
     }
 

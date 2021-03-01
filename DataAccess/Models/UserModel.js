@@ -47,7 +47,7 @@ class UserModel extends Model {
         },
         endorsedOtherUsersSkillsList: {
             relation: Model.HasManyRelation,
-            modelClass: UserEndorseModel,
+            modelClass:  UserEndorseModel,
             join: {
                 from: 'usersTable.id',
                 to: 'usersEndorsedOtherUsersSkillsListTable.userId'

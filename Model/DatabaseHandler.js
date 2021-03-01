@@ -3,8 +3,7 @@ const User = require('./User.js');
 const Project = require('./Project.js');
 
 class DatabaseHandler {
-    async runDataBase(path) {
-        await SqliteDatabase.runDatabase(path);
+     runDataBase() {
         Project.connectToDatabase(SqliteDatabase);
         User.connectToDatabase(SqliteDatabase);
     }

@@ -13,7 +13,7 @@ class AuthenticationDataAccess {
                 id: id,
                 password: password
             });
-            return response.data;
+            return response.data.message;
 
         } catch (e) {
             console.log(e)
