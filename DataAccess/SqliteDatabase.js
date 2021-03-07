@@ -409,107 +409,10 @@ class SqliteDatabase {
 }
 
 (async () => {
-    // await ProjectModel.query().insert({
-    //     id:'project1',
-    //     title: 'shitStuff',
-    //     budget: 100,
-    //     ownerId: 'user1',
-    //     description: 'for noobs',
-    //     deadline: '1999992000',
-    //     winnerId: null,
-    //     imageURL: "googleeee.com",
-    //     isActive: false
-    // });
-    // await ProjectSkillModel.query().insert({
-    //     projectId: 'project1',
-    //     skillName: 'HTTTP',
-    //     points: 220
-    // })
-    // await ProjectBidOfferModel.query().insert({
-    //     biddingUser: 'user2',
-    //     projectId: 'project1',
-    //     bidAmount: 1000
-    // })
-    // await SqliteDatabase.printUsersTable();
-    // await UserModel.query().insert({
-    //     id: "user2",
-    //     firstName: "hamid",
-    //     lastName: "yagh",
-    //     jobTitle: "Back",
-    //     bio: "nothing",
-    //     profilePictureURL: "google.com"
-    // });
-    // await UserActiveProjectModel.query().insert({
-    //     userId: "user1",
-    //     projectId: "3"
-    // });
-    // await UserSkillModel.query().insert({
-    //     skillName: "HTML",
-    //     points: 90,
-    //     userId: "user2"
-    // });
-    //
-    // let res = await UserModel.query().where('id', 'user1').withGraphFetched(`[
-    //   skills(defaultSelects) as skills,
-    //   activeProjectsIds(defaultSelects) as activeProjectsIds
-    //  ]`);
-    // console.log(JSON.stringify(res))
-    // await SqliteDatabase.printUsersTable();
-    // let users = await UserModel.query().withGraphFetched(`[
-    //         skills(defaultSelects) as skills,
-    //         activeProjectsIds(defaultSelects) as activeProjectsIds,
-    //         inactiveProjectsIds(defaultSelects) as inactiveProjectsIds,
-    //         takenProjectsIds(defaultSelects) as takenProjectsIds,
-    //         endorsedOtherUsersSkillsList(defaultSelects) as endorsedOtherUsersSkillsList
-    //     ]`).where('id', 'user1').then(user => user[0]);
-    // // console.log((SqliteDatabase.userModelToUserObject(users)))
-    // let skills = users
-    // console.log(skills);
-    // let skills = await ProjectSkillModel.query();
-    // console.log(skills)
-    // let projects = await ProjectModel.query().withGraphFetched(`[
-    //             skills(defaultSelects) as skills,
-    //             bidOffers(defaultSelects) as bidOffers,
-    //         ]`).then(projects => projects[0]);
-    // await SqliteDatabase.addUser('6', 'alireza', 'heidari', "worker", [{skillName: 'PY', points: 10}, {skillName: "HTML", points: 90}], ['3'], ['1', '3'], [], "backend", 'amazon.jpg', [])
-    // console.log(await SqliteDatabase.printUsersTable());
-    // let use = ((await UserSkillModel.query()));
-    // console.log()
-    // await UserEndorsedModel.query().insert({
-    //     userId: 'user2',
-    //     endorsedUserId: 'u',
-    //     skillName: 'HTML'
-    // });
-
-    // console.log(await SqliteDatabase.getAllUsers())
-
-    // console.log(use.)
-//     // console.log(await SqliteDatabase.removeUserSkill('6', 'PY'))
-//     await SqliteDatabase.increaseSkillPoints('6', "sf", "HTML")
-//     // await SqliteDatabase.addProject('project23' , "nothing" , [{skillName: "HTML" , points: 10} , {skillName: "CSS" ,points:2}] , 10 , '6' , [{biddingUser:'4' , projectId: 'project23' , bidAmount: 2}] , "asdf" , 2424234234 , null , "digikala", false)
-//     await SqliteDatabase.increaseSkillPoints('user2' , "HTML");
-//     let a = (await SqliteDatabase.getUserWithId('user1'))
-//     console.log(a)
-//     await UserModel.query().delete().where('id' , 'user1')
-//
-//     let a = (await SqliteDatabase.getUserWithId('user2'))
-//     console.log(a)
-    // console.log(await UserEndorsedModel.query())
-//     console.log(a)
-//     console.log(await SqliteDatabase.printUsersTable())
-//     console.log(await SqliteDatabase.removeProjectIdFromActiveProjectsIds('user2', "3"))
-//     console.log(await SqliteDatabase.setUserEndorsedOtherUsersSkillsList('user2', [{
-//         endorsedUserId: 'user44',
-//         skillName: "JSSS"
-//     }, {endorsedUserId: 'u', skillName: 'HTML'}]));
-// //     console.log(await SqliteDatabase.addProjectBidOffer('3' , {biddingUser: 'user23' , projectId: '3' , bidAmount:103}));
-//     console.log(await SqliteDatabase.getAllUsers())
-//     console.log(await SqliteDatabase.getAllProjects())
     let allU = await SqliteDatabase.getAllUsers();
     let allP =await SqliteDatabase.getAllProjects()
     console.log(JSON.stringify(allU))
     console.log(JSON.stringify(allP));
-//     // console.log(SqliteDatabase.projectModelToProjectObject(projects))
 })();
 
 module.exports = SqliteDatabase;
