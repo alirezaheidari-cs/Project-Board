@@ -1,6 +1,5 @@
 const User = require('../Model/User.js');
 const Project = require('../Model/Project.js');
-const knex = require('../DatabaseConfig/knex');
 const Skill = require('../Model/Skill');
 const BidOffer = require('../Model/BidOffer');
 const Endorsement = require('../Model/Endorsement');
@@ -61,7 +60,7 @@ class SqliteDatabase {
             skillsModel.push({
                 userId: id,
                 skillName: skillObject.skillName,
-                points: skillObject.points
+                points: parseInt(skillObject.points)
             })
         }
         return skillsModel
@@ -376,7 +375,7 @@ class SqliteDatabase {
             userId: id,
             skillName: skillName
         }).then(rows => rows[0]);
-        let points = userSkillRow.points + 1;
+        let points = parseInt(userSkillRow.points) + 1;
         await UserSkillModel.query().where({
             userId: id,
             skillName: skillName
@@ -506,8 +505,10 @@ class SqliteDatabase {
 // //     console.log(await SqliteDatabase.addProjectBidOffer('3' , {biddingUser: 'user23' , projectId: '3' , bidAmount:103}));
 //     console.log(await SqliteDatabase.getAllUsers())
 //     console.log(await SqliteDatabase.getAllProjects())
-    console.log(await SqliteDatabase.getAllUsers())
-    console.log(await SqliteDatabase.getAllProjects());
+    let allU = await SqliteDatabase.getAllUsers();
+    let allP =await SqliteDatabase.getAllProjects()
+    console.log(JSON.stringify(allU))
+    console.log(JSON.stringify(allP));
 //     // console.log(SqliteDatabase.projectModelToProjectObject(projects))
 })();
 

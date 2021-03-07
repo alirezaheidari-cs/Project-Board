@@ -123,7 +123,7 @@ class User {
         let skills, userGeneralInformation;
         skills = await this.getSkills();
         userGeneralInformation = await SqliteDatabase.getUserGeneralInformation(this.id);
-        let summary = "id: " + userGeneralInformation.id + "\nfirst name: " + userGeneralInformation.firstName + "\nlast name: " + userGeneralInformation.lastName + "\njob title: " + userGeneralInformation.jobTitle + "\nskills: [\n";
+        let summary = "id: " + userGeneralInformation.id + "\nfirst name: " + userGeneralInformation.firstName + "\nlast name: " + userGeneralInformation.lastName + "\njob title: " + userGeneralInformation.jobTitle + "\nskills: \n[\n";
         skills.forEach(skill => {
             summary = summary.concat("skillName: " + skill.skillName + " ,points: " + skill.points + "\n");
         });

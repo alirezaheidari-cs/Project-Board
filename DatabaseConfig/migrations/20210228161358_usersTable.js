@@ -1,5 +1,5 @@
 exports.up = function (knex) {
-    return knex.schema.createTableIfNotExists('usersTable', function (table) {
+    return knex.schema. createTableIfNotExists('usersTable', function (table) {
         table.string('id').primary();
         table.string('firstName');
         table.string('lastName');

@@ -2,12 +2,13 @@ const ServerDataAccess = require('../Model/ServerDataAccess.js');
 const DatabaseHandler = require('../Model/DatabaseHandler.js');
 const User = require('../Model/User.js');
 const Project = require('../Model/Project.js');
-const AuthenticationDataAccess = require('../Model/AuthenticationDataAccess.js')
+const AuthenticationDataAccess = require('../Model/AuthenticationDataAccess.js');
 const cron = require("node-cron");
 var stdin = process.openStdin();
 const Skill = require('../Model/Skill');
 const BidOffer = require('../Model/BidOffer');
 const Endorsement = require('../Model/Endorsement');
+const copyToClipboard = require('copy-to-clipboard');
 
 /*
 login {"id":"user1","password":"alireza"}
@@ -31,33 +32,27 @@ register {"id":"user3","firstName":"hamid","lastName":"yaghobi","jobTitle":"AI",
 register {"id":"user4","firstName":"hamid","lastName":"yaghobi","jobTitle":"AI","password":"alireza","bio":"olympiad","profilePictureURL":"gog"}
 register {"id":"user5","firstName":"hamid","lastName":"yaghobi","jobTitle":"AI","password":"alireza","bio":"olympiad","profilePictureURL":"gog"}
 
-addProject {"id":1,"title":"project1","skills":[{"skillName":"CSS","points":20}],"budget":10,"description":"goood","deadline":"2021/10/10","imageURL":"asfaa","token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MTQ2NTkzMDEsImlkIjoidXNlcjEifQ.d1K5GDINPY2gdiSrx0qSW4z1CKCnRODsPFBVSQmvYk0"}
-addProject {"id":2,"title":"project2","skills":[{"skillName":"HTML","points":20},{"skillName":"CSS","points":20}],"budget":1,"description":"goood","deadline":"2021/10/10","imageURL":"asfaa","token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MTQ0NjQwODYsImlkIjoidXNlcjEifQ.ThWSyPW6NmcfUgREinrAWOyBdWcF9h01jLeZu_z4SXw"}
+addProject {"id":1,"title":"project1","skills":[{"skillName":"CSS","points":20}],"budget":10,"description":"goood","deadline":"2021/10/10","imageURL":"asfaa","token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MTUwNTYwMTEsImlkIjoidXNlcjEifQ.Oia7hGhSkfTwShp9JQAeNHuyj96m3RSXAREVxz88t8U"}
+addProject {"id":2,"title":"project2","skills":[{"skillName":"HTML","points":20},{"skillName":"CSS","points":20}],"budget":1,"description":"goood","deadline":"2021/10/10","imageURL":"asfaa","token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MTQ3Mjk1NDAsImlkIjoidXNlcjEifQ.rJsgv3a-XvV_i4GopeKnLIsyAuNxPRRRmWEr9ndiXVI"}
 
-addProject {"id":3,"title":"project2","skills":[{"skillName":"HTML","points":20},{"skillName":"CSS","points":20}],"budget":1,"description":"goood","deadline":"2010/10/10","imageURL":"asfaa","token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MTQ0NjUxNTIsImlkIjoidXNlcjEifQ.rvKcD9f6iHK-VYqe4mxfwAwe5h_QgUNPeAlkKGoIbuc"}
+addProject {"id":3,"title":"project2","skills":[{"skillName":"HTML","points":20},{"skillName":"CSS","points":20}],"budget":1,"description":"goood","deadline":"2010/10/10","imageURL":"asfaa","token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MTQ3Mjk1NDAsImlkIjoidXNlcjEifQ.rJsgv3a-XvV_i4GopeKnLIsyAuNxPRRRmWEr9ndiXVI"}
 eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MTQ2NTkzMDEsImlkIjoidXNlcjEifQ.d1K5GDINPY2gdiSrx0qSW4z1CKCnRODsPFBVSQmvYk0
 
-login {"id":"user4","password":"alireza"}
-addProject {"id":3,"title":"project3","skills":[{"skillName":"HTML","points":20}],"budget":100,"description":"goood","deadline":"2021/10/10","imageURL":"asfaa","token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MTQ2NjQwMjIsImlkIjoidXNlcjEifQ.3L-vDOgS75W9sNqng50oNjcq7WSfwmW0iWsG7q3zCwo"}
-bid {"projectId":3,"bidAmount":1,"token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MTQ2NjQxNjIsImlkIjoidXNlcjMifQ.zhhI9mlFkzORGH3m1n_IbpLG7pYlYiwZet5lVzeFgAk"}
-auction {"projectId":3,"token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MTQ2NjQwMjIsImlkIjoidXNlcjEifQ.3L-vDOgS75W9sNqng50oNjcq7WSfwmW0iWsG7q3zCwo"}
-editProfile {"token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MTQ2NjQxNjIsImlkIjoidXNlcjMifQ.zhhI9mlFkzORGH3m1n_IbpLG7pYlYiwZet5lVzeFgAk"}
-removeSkill {"skillName":"HTML","token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MTQ2NjIyMjUsImlkIjoidXNlcjEifQ.aePlDTRo-1NOtLJsvva50qu2iteG6hUS3EtIPSFnRlY"}
+login {"id":"user1","password":"alireza"}
+addProject {"id":3,"title":"project3","skills":[{"skillName":"HTML","points":20}],"budget":100,"description":"goood","deadline":"2021/10/10","imageURL":"asfaa","token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MTQ3Mjk1NDAsImlkIjoidXNlcjEifQ.rJsgv3a-XvV_i4GopeKnLIsyAuNxPRRRmWEr9ndiXVI"}
+bid {"projectId":3,"bidAmount":1,"token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MTQ3MDQ1NTcsImlkIjoidXNlcjMifQ.LbBiyY1yJ-D5Rr4GO1nwQ6-yWhEeHib2iJafnm8qz6Y"}
+auction {"projectId":1,"token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MTUwNTYwMTEsImlkIjoidXNlcjEifQ.Oia7hGhSkfTwShp9JQAeNHuyj96m3RSXAREVxz88t8U"}
+editProfile {"token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MTUwNjUxODYsImlkIjoidXNlcjEifQ.bGifla6IEEwzJ796Dcqw9qzLDng1REvvOfgDwuvtKVY"}
+removeSkill {"skillName":"HTML","token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MTUwNjUxODYsImlkIjoidXNlcjEifQ.bGifla6IEEwzJ796Dcqw9qzLDng1REvvOfgDwuvtKVY"}
 seeAllUsersInformation {"token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MTQ0MTMyMDksImlkIjoidXNlcjEifQ.n3Zfb3VmgfDzKi-w-zeSat1ITZAA4ykaDcH48jLk6VM"}
-endorseAUserSkill {"endorsedUserId":"user3","skillName":"HTML","token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MTQ2NjQyMzMsImlkIjoidXNlcjQifQ.Cvyp9s0HOeEPgUkTl3kR16dQwwuPPVDCgQsIMeWQwxk"}
-seeSpecificProjectInformation {"id":3,"token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MTQ0MTMyMDksImlkIjoidXNlcjEifQ.n3Zfb3VmgfDzKi-w-zeSat1ITZAA4ykaDcH48jLk6VM"}
-seeSpecificUserInformation {"id":"user4" ,"token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MTQ0MTMyMDksImlkIjoidXNlcjEifQ.n3Zfb3VmgfDzKi-w-zeSat1ITZAA4ykaDcH48jLk6VM"}
-addSkill {"skillName":"HTML","points":19,"token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MTQ2NjQxNjIsImlkIjoidXNlcjMifQ.zhhI9mlFkzORGH3m1n_IbpLG7pYlYiwZet5lVzeFgAk"}
-showProfile {"token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MTQ2MzU5MzIsImlkIjoidXNlcjQifQ.WvqiB74wjGlPNOc6ug84xEkFGuigcKZFERiwJmLRzJY"}
+endorseAUserSkill {"endorsedUserId":"user1","skillName":"HTML","token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MTUwNjUyNzAsImlkIjoidXNlcjIifQ.k1Xs5-qyoJLtGs7Cg-wDvXWX5pwn75fzLwOiCtDokrg"}
+seeSpecificProjectInformation {"id":1,"token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MTUxMzY4ODcsImlkIjoidXNlcjEifQ.Zu_w9xyMPOe8f1CaOk5orXgVh7GjrBXoKB8cQ5u6b9s"}
+seeSpecificUserInformation {"id":"user2" ,"token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MTUxMzY4ODcsImlkIjoidXNlcjEifQ.Zu_w9xyMPOe8f1CaOk5orXgVh7GjrBXoKB8cQ5u6b9s"}
+addSkill {"skillName":"HTML","points":19,"token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MTUwNjUxODYsImlkIjoidXNlcjEifQ.bGifla6IEEwzJ796Dcqw9qzLDng1REvvOfgDwuvtKVY"}
+showProfile {"token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MTUwNjUxODYsImlkIjoidXNlcjEifQ.bGifla6IEEwzJ796Dcqw9qzLDng1REvvOfgDwuvtKVY"}
 register {"id":"user1","firstName":"hamid","lastName":"yaghobi","jobTitle":"AI","password":"alireza","bio":"olympiad","profilePictureURL":"gog"}
 
-
-eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MTQ2NjQwMjIsImlkIjoidXNlcjEifQ.3L-vDOgS75W9sNqng50oNjcq7WSfwmW0iWsG7q3zCwo
-eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MTQ2NjQwNzksImlkIjoidXNlcjIifQ.vGcn70H1hP1dE5DbVL7VXaY0tJLaQhA9nwWnE9TBnzg
-eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MTQ2NjQxNjIsImlkIjoidXNlcjMifQ.zhhI9mlFkzORGH3m1n_IbpLG7pYlYiwZet5lVzeFgAk
-eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MTQ2NjQyMzMsImlkIjoidXNlcjQifQ.Cvyp9s0HOeEPgUkTl3kR16dQwwuPPVDCgQsIMeWQwxk
-
-
+eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MTUxMzY4ODcsImlkIjoidXNlcjEifQ.Zu_w9xyMPOe8f1CaOk5orXgVh7GjrBXoKB8cQ5u6b9s
 */
 class Application {
     static loginRegisterMenuCommands = ["register", "login", "end"];
@@ -66,7 +61,7 @@ class Application {
     static editProfileMenuCommands = ["register", "logout", "addSkill",
         "removeSkill", "back", "showProfile", "seeAvailableSkills", "end"];
     static skillsSet;
-    static authenticationPort = 9000;
+    static authenticationPort = 9999;
     static serverPort = 8080;
 
     constructor() {
@@ -290,7 +285,6 @@ class Application {
 
             return await this.removeSkill(removeSkillJSON);
         } else if (inputCommand.startsWith("addSkill")) {
-
             let skillJSON = Application.getJSONPartOfCommandWithGivenRegex(inputCommand, /addSkill ({.+})/, "add Skill");
             if (skillJSON === undefined)
                 return skillJSON;
