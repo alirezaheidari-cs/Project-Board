@@ -8,6 +8,7 @@ let user2 = new User();
 let user3 = new User();
 let user4 = new User();
 
+
 user1.setUserInformation("user1", "amin", "davood", "AI", [{name: "HTML", points: 60}, {
     name: "CSS",
     points: 60
