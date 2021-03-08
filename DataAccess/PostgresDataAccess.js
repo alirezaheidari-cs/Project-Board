@@ -13,7 +13,7 @@ const ProjectModel = require('./Models/ProjectModel');
 const ProjectBidOfferModel = require('./Models/ProjectBidOfferModel');
 const ProjectSkillModel = require('./Models/ProjectSkillModel');
 
-class SqliteDatabase {
+class PostgresDataAccess {
 
     static async printUsersTable() {
         let users = await UserModel.query().withGraphFetched(`[
@@ -43,8 +43,8 @@ class SqliteDatabase {
     static projectModelToProjectObject(projectModel) {
         try {
             let isActive = projectModel.isActive ? true : false;
-            let bidOffersObject = SqliteDatabase.convertBidOffersModelListToObject(projectModel.bidOffers);
-            let skillsObject = SqliteDatabase.convertSkillModelListToObject(projectModel.skills);
+            let bidOffersObject = PostgresDataAccess.convertBidOffersModelListToObject(projectModel.bidOffers);
+            let skillsObject = PostgresDataAccess.convertSkillModelListToObject(projectModel.skills);
             let project = new Project(projectModel.id, projectModel.title, skillsObject, projectModel.budget, projectModel.ownerId,
                 bidOffersObject, projectModel.description, projectModel.deadline, projectModel.winnerId, projectModel.imageURL, isActive);
             return project
@@ -133,11 +133,11 @@ class SqliteDatabase {
 
     static userModelToUserObject(userModel) {
         try {
-            let skillsObject = SqliteDatabase.convertSkillModelListToObject(userModel.skills);
-            let activeProjectsIdsJSON = SqliteDatabase.projectIdModelToProjectIdJSON(userModel.activeProjectsIds);
-            let inactiveProjectsIdsJSON = SqliteDatabase.projectIdModelToProjectIdJSON(userModel.inactiveProjectsIds);
-            let takenProjectsIdsJSON = SqliteDatabase.projectIdModelToProjectIdJSON(userModel.takenProjectsIds);
-            let endorsedListObject = SqliteDatabase.convertEndorsementModelListToObject(userModel.endorsedOtherUsersSkillsList);
+            let skillsObject = PostgresDataAccess.convertSkillModelListToObject(userModel.skills);
+            let activeProjectsIdsJSON = PostgresDataAccess.projectIdModelToProjectIdJSON(userModel.activeProjectsIds);
+            let inactiveProjectsIdsJSON = PostgresDataAccess.projectIdModelToProjectIdJSON(userModel.inactiveProjectsIds);
+            let takenProjectsIdsJSON = PostgresDataAccess.projectIdModelToProjectIdJSON(userModel.takenProjectsIds);
+            let endorsedListObject = PostgresDataAccess.convertEndorsementModelListToObject(userModel.endorsedOtherUsersSkillsList);
             let user = new User(userModel.id, userModel.firstName, userModel.lastName, userModel.jobTitle, undefined, skillsObject,
                 activeProjectsIdsJSON, inactiveProjectsIdsJSON, takenProjectsIdsJSON, userModel.bio, userModel.profilePictureURL, endorsedListObject);
             return user;
@@ -175,7 +175,7 @@ class SqliteDatabase {
         ]`);
         for (let i = 0; i < allProjectsModels.length; i++) {
             let projectModel = allProjectsModels[i];
-            let project = SqliteDatabase.projectModelToProjectObject(projectModel);
+            let project = PostgresDataAccess.projectModelToProjectObject(projectModel);
             allProjects.push(project);
         }
         return allProjects;
@@ -187,7 +187,7 @@ class SqliteDatabase {
                 skills(defaultSelects) as skills,
                 bidOffers(defaultSelects) as bidOffers,
             ]`).where('id', id).then(projectList => projectList[0]);
-            let project = SqliteDatabase.projectModelToProjectObject(projectModel)
+            let project = PostgresDataAccess.projectModelToProjectObject(projectModel)
             return project
         } catch (e) {
             return undefined;
@@ -205,7 +205,7 @@ class SqliteDatabase {
         ]`);
         for (let i = 0; i < allUsersModel.length; i++) {
             let userModel = allUsersModel[i];
-            let user = SqliteDatabase.userModelToUserObject(userModel);
+            let user = PostgresDataAccess.userModelToUserObject(userModel);
             allUsers.push(user);
         }
         return allUsers;
@@ -220,7 +220,7 @@ class SqliteDatabase {
                 takenProjectsIds(defaultSelects) as takenProjectsIds,
                 endorsedOtherUsersSkillsList as endorsedOtherUsersSkillsList
             ]`).where('id', id).then(userList => userList[0]);
-            let user = SqliteDatabase.userModelToUserObject(userModel);
+            let user = PostgresDataAccess.userModelToUserObject(userModel);
             return user;
         } catch (e) {
             return undefined;
@@ -228,11 +228,11 @@ class SqliteDatabase {
     }
 
     static async addUser(id, firstName, lastName, jobTitle, skills, activeProjectIds, inactiveProjectsIds, takenProjectsIds, bio, profilePictureURL, endorsedOtherUsersSkillsList) {
-        let skillsModel = SqliteDatabase.userSkillsObjectToSkillsModel(skills, id);
-        let activeProjectsModel = SqliteDatabase.projectJSONToProjectModel(activeProjectIds, id);
-        let inactiveProjectsModel = SqliteDatabase.projectJSONToProjectModel(inactiveProjectsIds, id);
-        let takenProjectsModel = SqliteDatabase.projectJSONToProjectModel(takenProjectsIds, id);
-        let endorsedListModel = SqliteDatabase.endorseObjectToEndorseModel(endorsedOtherUsersSkillsList);
+        let skillsModel = PostgresDataAccess.userSkillsObjectToSkillsModel(skills, id);
+        let activeProjectsModel = PostgresDataAccess.projectJSONToProjectModel(activeProjectIds, id);
+        let inactiveProjectsModel = PostgresDataAccess.projectJSONToProjectModel(inactiveProjectsIds, id);
+        let takenProjectsModel = PostgresDataAccess.projectJSONToProjectModel(takenProjectsIds, id);
+        let endorsedListModel = PostgresDataAccess.endorseObjectToEndorseModel(endorsedOtherUsersSkillsList);
 
         await UserModel.query().insertGraph({
                 firstName: firstName,
@@ -252,8 +252,8 @@ class SqliteDatabase {
     }
 
     static async addProject(id, title, skills, budget, ownerId, bidOffers, description, deadline, winnerId, imageURL, isActive) {
-        let skillsModel = SqliteDatabase.projectSkillsObjectsToSkillsModel(skills, id);
-        let bidOfferModel = SqliteDatabase.projectBidOfferObjectToBidOfferModel(bidOffers);
+        let skillsModel = PostgresDataAccess.projectSkillsObjectsToSkillsModel(skills, id);
+        let bidOfferModel = PostgresDataAccess.projectBidOfferObjectToBidOfferModel(bidOffers);
         await ProjectModel.query().insertGraph({
                 id: id,
                 title: title,
@@ -335,17 +335,17 @@ class SqliteDatabase {
 
     static async getEndorsedOtherUsersSkillsList(id) {
         let userEndorsedList = await UserEndorsedModel.query().where('userId', id);
-        return SqliteDatabase.convertEndorsementModelListToObject(userEndorsedList);
+        return PostgresDataAccess.convertEndorsementModelListToObject(userEndorsedList);
     }
 
     static async getUserSkills(id) {
         let usersSkills = await UserSkillModel.query().select('skillName', 'points').where('userId', id);
-        return SqliteDatabase.convertSkillModelListToObject(usersSkills);
+        return PostgresDataAccess.convertSkillModelListToObject(usersSkills);
     }
 
     static async setUserEndorsedOtherUsersSkillsList(id, endorsedOtherUsersSkillsList) {
         let currentEndorsedList;
-        currentEndorsedList = await SqliteDatabase.getEndorsedOtherUsersSkillsList(id);
+        currentEndorsedList = await PostgresDataAccess.getEndorsedOtherUsersSkillsList(id);
 
         for (let i = 0; i < currentEndorsedList.length; i++) {
             let currentEndorse = currentEndorsedList[i];
@@ -409,10 +409,10 @@ class SqliteDatabase {
 }
 
 (async () => {
-    let allU = await SqliteDatabase.getAllUsers();
-    let allP =await SqliteDatabase.getAllProjects()
+    let allU = await PostgresDataAccess.getAllUsers();
+    let allP =await PostgresDataAccess.getAllProjects()
     console.log(JSON.stringify(allU))
     console.log(JSON.stringify(allP));
 })();
 
-module.exports = SqliteDatabase;
+module.exports = PostgresDataAccess;

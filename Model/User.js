@@ -1,10 +1,10 @@
 // const SqliteDatabase = require('../DataAccess/SqliteDatabase');
-let SqliteDatabase;
+let PostgresDataAccess;
 
 
 class User {
-    static connectToDatabase(sqliteDatabase) {
-        SqliteDatabase = sqliteDatabase;
+    static connectToDatabase(db) {
+        PostgresDataAccess = db;
     }
 
     constructor(id, firstName, lastName, jobTitle, password, skills, activeProjectIds, inactiveProjectsIds, takenProjectsIds, bio, profilePictureURL, endorsedOtherUsersSkillsList) {
@@ -24,65 +24,65 @@ class User {
 
     static async getUserWithToken(token , authenticationDataAccess){
         let id = await authenticationDataAccess.getUserIdWithToken(token);
-        return await SqliteDatabase.getUserWithId(id);
+        return await PostgresDataAccess.getUserWithId(id);
     }
 
     static async getAllUsers() {
-        return await SqliteDatabase.getAllUsers();
+        return await PostgresDataAccess.getAllUsers();
     }
 
     static async isThereAnyUserWithId(id) {
-        let user = await SqliteDatabase.getUserWithId(id);
+        let user = await PostgresDataAccess.getUserWithId(id);
         return user !== undefined;
 
     }
 
     static async addUser(user) {
-        await SqliteDatabase.addUser(user.id, user.firstName, user.lastName, user.jobTitle, user.skills, user.activeProjectsIds,
+        await PostgresDataAccess.addUser(user.id, user.firstName, user.lastName, user.jobTitle, user.skills, user.activeProjectsIds,
             user.inactiveProjectsIds, user.takenProjectsIds, user.bio,
             user.profilePictureURL, user.endorsedOtherUsersSkillsList);
     }
 
     static async getUserWithId(id) {
-        return await SqliteDatabase.getUserWithId(id);
+        return await PostgresDataAccess.getUserWithId(id);
     }
 
     async getEndorsedOtherUsersSkillsList() {
-        return await SqliteDatabase.getEndorsedOtherUsersSkillsList(this.id);
+        return await PostgresDataAccess.getEndorsedOtherUsersSkillsList(this.id);
     }
 
     async setEndorsedOtherUsersSkillsList(endorsedOtherUsersSkillsList) {
-        await SqliteDatabase.setUserEndorsedOtherUsersSkillsList(this.id, endorsedOtherUsersSkillsList);
+        await PostgresDataAccess.setUserEndorsedOtherUsersSkillsList(this.id, endorsedOtherUsersSkillsList);
     }
 
     async addProjectToTakenProjectsIds(projectId) {
-        await SqliteDatabase.addProjectToTakenProjectsIds(this.id, projectId);
+        await PostgresDataAccess.addProjectToTakenProjectsIds(this.id, projectId);
     }
 
     async addProjectToActiveProjectsIds(projectId) {
-        await SqliteDatabase.addProjectToActiveProjectsIds(this.id, projectId);
+        await PostgresDataAccess.addProjectToActiveProjectsIds(this.id, projectId);
     }
 
     async addProjectToInactiveProjectsIds(projectId) {
-        await SqliteDatabase.addProjectToInactiveProjectsIds(this.id, projectId);
+        await PostgresDataAccess.addProjectToInactiveProjectsIds(this.id, projectId);
     }
 
     async removeProject(projectId) {
-        await SqliteDatabase.addProjectToInactiveProjectsIds(this.id, projectId);
-        await SqliteDatabase.removeProjectIdFromActiveProjectsIds(this.id, projectId);
+        await PostgresDataAccess.addProjectToInactiveProjectsIds(this.id, projectId);
+        await PostgresDataAccess.removeProjectIdFromActiveProjectsIds(this.id, projectId);
     }
 
     async removeSkill(skillName) {
-        await SqliteDatabase.removeUserSkill(this.id, skillName);
+        await PostgresDataAccess.removeUserSkill(this.id, skillName);
     }
 
     async getSkills() {
-        return await SqliteDatabase.getUserSkills(this.id);
+        return await PostgresDataAccess.getUserSkills(this.id);
     }
 
     async addToEndorsedOtherUsersSkillsList(endorsedObject) {
 
-        await SqliteDatabase.addUserEndorsedOtherUsersSkillsList(this.id, endorsedObject);
+        await PostgresDataAccess.addUserEndorsedOtherUsersSkillsList(this.id, endorsedObject);
     }
 
     async isThisUserEndorsedThisSkillForThisUser(skillName, endorsedUserId) {
@@ -105,7 +105,7 @@ class User {
 
     async addSkill(skill) {
         this.skills.push(skill);
-        await SqliteDatabase.addUserSkill(this.id, skill);
+        await PostgresDataAccess.addUserSkill(this.id, skill);
     }
 
     async increaseSkillPoints(skillName) {
@@ -116,13 +116,13 @@ class User {
                 skill.points = skill.points + 1;
             }
         });
-        await SqliteDatabase.increaseSkillPoints(this.id, skillName);
+        await PostgresDataAccess.increaseSkillPoints(this.id, skillName);
     }
 
     async getUserSummary() {
         let skills, userGeneralInformation;
         skills = await this.getSkills();
-        userGeneralInformation = await SqliteDatabase.getUserGeneralInformation(this.id);
+        userGeneralInformation = await PostgresDataAccess.getUserGeneralInformation(this.id);
         let summary = "id: " + userGeneralInformation.id + "\nfirst name: " + userGeneralInformation.firstName + "\nlast name: " + userGeneralInformation.lastName + "\njob title: " + userGeneralInformation.jobTitle + "\nskills: \n[\n";
         skills.forEach(skill => {
             summary = summary.concat("skillName: " + skill.skillName + " ,points: " + skill.points + "\n");

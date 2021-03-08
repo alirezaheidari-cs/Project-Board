@@ -1,10 +1,10 @@
 // const SqliteDatabase = require('../DataAccess/SqliteDatabase');
-let SqliteDatabase;
+let PostgresDataAccess;
 
 class Project {
 
-    static connectToDatabase(sqliteDatabase) {
-        SqliteDatabase = sqliteDatabase;
+    static connectToDatabase(db) {
+        PostgresDataAccess = db;
     }
 
     constructor(id, title, skills, budget, ownerId, bidOffers, description, deadline, winnerId, imageURL, isActive) {
@@ -22,21 +22,21 @@ class Project {
     }
 
     static async getAllProjects() {
-        return await SqliteDatabase.getAllProjects();
+        return await PostgresDataAccess.getAllProjects();
     }
 
     static async getProjectWithProjectId(id) {
-        return await SqliteDatabase.getProjectWithId(id);
+        return await PostgresDataAccess.getProjectWithId(id);
     }
 
     static async isThereAnyProjectsWithId(id) {
-        let project = await SqliteDatabase.getProjectWithId(id);
+        let project = await PostgresDataAccess.getProjectWithId(id);
         return project !== undefined;
     }
 
     static async getProjectWithProjectIdWithActive(id, isActive) {
         let project;
-        project = await SqliteDatabase.getProjectWithId(id);
+        project = await PostgresDataAccess.getProjectWithId(id);
         if (project === undefined) {
             return undefined;
         } else if (project.isActive !== isActive) {
@@ -51,22 +51,22 @@ class Project {
     }
 
     static async addProject(project) {
-        await SqliteDatabase.addProject(project.id, project.title, project.skills, project.budget, project.ownerId,
+        await PostgresDataAccess.addProject(project.id, project.title, project.skills, project.budget, project.ownerId,
             project.bidOffers, project.description, project.deadline, project.winnerId, project.imageURL, project.isActive);
     }
 
     async addBidOffers(bidOffer) {
-        await SqliteDatabase.addProjectBidOffer(this.id, bidOffer);
+        await PostgresDataAccess.addProjectBidOffer(this.id, bidOffer);
         this.bidOffers.push(bidOffer);
     }
 
     async setWinnerId(winnerId) {
-        await SqliteDatabase.setProjectWinnerId(this.id, winnerId);
+        await PostgresDataAccess.setProjectWinnerId(this.id, winnerId);
         this.winnerId = winnerId;
     }
 
     async setIsActive(isActive) {
-        await SqliteDatabase.setProjectIsActive(this.id, isActive);
+        await PostgresDataAccess.setProjectIsActive(this.id, isActive);
         this.isActive = isActive;
     }
 

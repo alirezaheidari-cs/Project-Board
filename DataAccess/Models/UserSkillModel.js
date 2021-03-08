@@ -1,6 +1,6 @@
 const {Model} = require('objection')
 const UserModel = require('./UserModel')
-const knex = require('../../DatabaseConfig/knex');
+const knex = require('/home/tapsi/Tapsi/project1_joboonja/final/DatabaseConfig/knex');
 Model.knex(knex);
 
 class UserSkillModel extends Model {
