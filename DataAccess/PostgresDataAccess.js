@@ -1,5 +1,5 @@
-const User = require('../Model/User.js');
-const Project = require('../Model/Project.js');
+const User = require('/home/tapsi/Tapsi/project1_joboonja/final/Model/User');
+const Project = require('../Model/Project');
 const Skill = require('../Model/Skill');
 const BidOffer = require('../Model/BidOffer');
 const Endorsement = require('../Model/Endorsement');
@@ -12,6 +12,8 @@ const UserEndorsedModel = require('./Models/UserEndorsedModel');
 const ProjectModel = require('./Models/ProjectModel');
 const ProjectBidOfferModel = require('./Models/ProjectBidOfferModel');
 const ProjectSkillModel = require('./Models/ProjectSkillModel');
+
+
 
 class PostgresDataAccess {
 
@@ -42,6 +44,7 @@ class PostgresDataAccess {
 
     static projectModelToProjectObject(projectModel) {
         try {
+
             let isActive = projectModel.isActive ? true : false;
             let bidOffersObject = PostgresDataAccess.convertBidOffersModelListToObject(projectModel.bidOffers);
             let skillsObject = PostgresDataAccess.convertSkillModelListToObject(projectModel.skills);
@@ -73,7 +76,7 @@ class PostgresDataAccess {
             skillsModel.push({
                 projectId: id,
                 skillName: skillObject.skillName,
-                points: skillObject.points
+                points: parseInt(skillObject.points)
             })
         }
         return skillsModel
@@ -107,7 +110,7 @@ class PostgresDataAccess {
     static convertSkillModelListToObject(skillsModel) {
         let skills = [];
         for (let i = 0; i < skillsModel.length; i++) {
-            let skill = new Skill(skillsModel[i].skillName, skillsModel[i].points);
+            let skill = new Skill(skillsModel[i].skillName, parseInt(skillsModel[i].points));
             skills.push(skill);
         }
         return skills;
@@ -125,7 +128,7 @@ class PostgresDataAccess {
     static convertEndorsementModelListToObject(endorsementModel) {
         let endorsements = [];
         for (let i = 0; i < endorsementModel.length; i++) {
-            let endorsement = new Endorsement( endorsementModel[i].endorsedUserId,endorsementModel[i].userId, endorsementModel[i].skillName);
+            let endorsement = new Endorsement(endorsementModel[i].endorsedUserId, endorsementModel[i].userId, endorsementModel[i].skillName);
             endorsements.push(endorsement);
         }
         return endorsements;
@@ -322,7 +325,7 @@ class PostgresDataAccess {
         await UserSkillModel.query().insert({
             userId: id,
             skillName: skill.skillName,
-            points: skill.points
+            points: parseInt(skill.points)
         });
     }
 
@@ -410,9 +413,12 @@ class PostgresDataAccess {
 
 (async () => {
     let allU = await PostgresDataAccess.getAllUsers();
-    let allP =await PostgresDataAccess.getAllProjects()
+    let allP = await PostgresDataAccess.getAllProjects()
     console.log(JSON.stringify(allU))
     console.log(JSON.stringify(allP));
 })();
 
 module.exports = PostgresDataAccess;
+//
+
+//

@@ -2,6 +2,10 @@
   "name": "final",
   "version": "1.0.0",
   "description": "",
+  "jest": {
+    "verbose": true,
+    "testRegex": ".*/.*\\.(js|jsx)$"
+  },
   "main": "index.js",
   "scripts": {
     "test": "jest"
@@ -37,9 +41,12 @@
     "readline-sync": "^1.4.10",
     "sqlite": "^4.0.19",
     "sqlite3": "^5.0.2",
+    "ts-mockito": "^2.6.1",
     "vanillajs": "^1.0.1"
   },
   "devDependencies": {
+    "@babel/core": "^7.13.8",
+    "@babel/preset-env": "^7.13.9",
     "chai": "^4.3.3",
     "cors": "^2.8.5",
     "helmet": "^4.4.1",

@@ -1,8 +1,7 @@
 const cron = require("node-cron");
-const ServerDataAccess = require('../DataAccess/ServerDataAccess.js');
-const DatabaseHandler = require('../DataAccess/DatabaseHandler');
 const User = require('./User.js');
 const Project = require('./Project.js');
+const ServerDataAccess = require('../DataAccess/ServerDataAccess.js');
 const AuthenticationDataAccess = require('../DataAccess/AuthenticationDataAccess.js');
 const Skill = require('./Skill');
 const BidOffer = require('./BidOffer');
@@ -19,9 +18,10 @@ class ApplicationController {
     }
 
     static async runDataAccessClasses() {
-        await ApplicationController.runDatabase();
-        ApplicationController.schedulerForCheckProjectsDeadline();
+        new Project()
+        new User()
         await ApplicationController.getSkillsAndProjectsFromServer();
+        ApplicationController.schedulerForCheckProjectsDeadline();
         console.log("skills are ready");
     }
 
@@ -29,12 +29,12 @@ class ApplicationController {
         return await this.authenticationDataAccess.isTokenExpired(token);
     }
 
-    async getUserIdWithToken(token){
+    async getUserIdWithToken(token) {
         return await this.authenticationDataAccess.getUserIdWithToken(token)
     }
 
     static schedulerForCheckProjectsDeadline() {
-        cron.schedule('*/2 * * * *', async () => {
+        cron.schedule('*/5 * * * * *', async () => {
             await ApplicationController.checkProjectsDeadlinesPassed();
         }, {
             scheduled: true
@@ -50,10 +50,6 @@ class ApplicationController {
         ApplicationController.skillsSet = await serverDataAccess.getSkillsFromServer();
     }
 
-    static async runDatabase() {
-        const dataBaseHandler = new DatabaseHandler();
-        await dataBaseHandler.runDataBase();
-    }
 
     static async convertProjectJSONToProjectObject(allProjectsDataJSON) {
         if (allProjectsDataJSON !== undefined) {
@@ -251,11 +247,12 @@ class ApplicationController {
     }
 
     async handleAuction(auctionInformationJSON) {
-        let tokenOwnerId = await this.authenticationDataAccess.getUserIdWithToken(auctionInformationJSON.token);
-        let project = await Project.getProjectWithProjectIdWithActive(auctionInformationJSON.projectId, true);
+        let project, tokenOwnerId;
+        tokenOwnerId = await this.authenticationDataAccess.getUserIdWithToken(auctionInformationJSON.token);
+        project = await Project.getProjectWithProjectIdWithActive(auctionInformationJSON.projectId, true);
         if (project === undefined) {
             return "there is not any projects with this id";
-        } else if (project.isActive === false) {
+        } else if (project.getIsActive() === false) {
             return "there is not any active projects with this id";
         } else if (project.getOwnerId() !== tokenOwnerId) {
             return "you can not auction a project which you are not its owner";
