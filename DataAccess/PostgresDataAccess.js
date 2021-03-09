@@ -119,7 +119,7 @@ class PostgresDataAccess {
     static convertBidOffersModelListToObject(bidOffersModel) {
         let bidOffers = [];
         for (let i = 0; i < bidOffersModel.length; i++) {
-            let bidOffer = new BidOffer(bidOffersModel[i].biddingUser, bidOffersModel[i].projectId, bidOffersModel[i].bidAmount);
+            let bidOffer = new BidOffer(bidOffersModel[i].biddingUser, bidOffersModel[i].projectId, parseInt(bidOffersModel[i].bidAmount));
             bidOffers.push(bidOffer);
         }
         return bidOffers;
@@ -164,7 +164,7 @@ class PostgresDataAccess {
             bidOffersModel.push({
                 biddingUser: bidOfferObject.biddingUser,
                 projectId: bidOfferObject.projectId,
-                bidAmount: bidOfferObject.bidAmount
+                bidAmount: parseInt(bidOfferObject.bidAmount)
             });
         }
         return bidOffersModel
@@ -393,7 +393,7 @@ class PostgresDataAccess {
         await ProjectBidOfferModel.query().insert({
             projectId: id,
             biddingUser: bidOffer.biddingUser,
-            bidAmount: bidOffer.bidAmount
+            bidAmount: parseInt(bidOffer.bidAmount)
         });
     }
 
@@ -411,12 +411,7 @@ class PostgresDataAccess {
 
 }
 
-(async () => {
-    let allU = await PostgresDataAccess.getAllUsers();
-    let allP = await PostgresDataAccess.getAllProjects()
-    console.log(JSON.stringify(allU))
-    console.log(JSON.stringify(allP));
-})();
+
 
 module.exports = PostgresDataAccess;
 //

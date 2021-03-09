@@ -59,7 +59,7 @@ describe("test application controller functions", () => {
         endorserUser.endorsedOtherUsersSkillsList.push(new Endorsement('1', '2', "HTML"))
         User.getUserWithToken = await jest.fn().mockResolvedValue(user);
         user.isThisUserHasThisSkill = await jest.fn().mockResolvedValue(true);
-        jest.spyOn(applicationController , 'checkUserBidNeedThisSkill').mockResolvedValue("skill removed successfully")
+        jest.spyOn(applicationController , 'checkUserBidNeedThisSkill').mockResolvedValue(false)
 
         // applicationController.checkUserBidNeedThisSkill = await jest.fn().mockResolvedValue();
 
@@ -90,11 +90,11 @@ describe("test application controller functions", () => {
 
     it("should check user bid need this skill", async () => {
         Project.getAllProjects = await jest.fn().mockResolvedValue([project]);
-        let message = await applicationController.checkUserBidNeedThisSkill(user1, "HTML");
-        expect(message).toBe("you cannot remove this skill because you bid for some project which needed this skill");
+        let flag = await applicationController.checkUserBidNeedThisSkill(user1, "HTML");
+        expect(flag).toBe(true);
         project.bidOffers = [];
-        message = await applicationController.checkUserBidNeedThisSkill(user1, "HTML");
-        expect(message).toBe("skill removed successfully");
+        flag = await applicationController.checkUserBidNeedThisSkill(user1, "HTML");
+        expect(flag).toBe(false);
     });
 
 });

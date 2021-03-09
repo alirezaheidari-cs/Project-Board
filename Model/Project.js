@@ -14,24 +14,24 @@ class Project {
     }
 
     static async getAllProjects() {
-        const PostgresDataAccess = await require('/home/tapsi/Tapsi/project1_joboonja/final/DataAccess/PostgresDataAccess');
+        const PostgresDataAccess = await Project.getDatabaseAccessInstance();
         return await PostgresDataAccess.getAllProjects();
     }
 
     static async getProjectWithProjectId(id) {
-        const PostgresDataAccess = await require('/home/tapsi/Tapsi/project1_joboonja/final/DataAccess/PostgresDataAccess');
+        const PostgresDataAccess = await Project.getDatabaseAccessInstance();
         return await PostgresDataAccess.getProjectWithId(id);
     }
 
     static async isThereAnyProjectsWithId(id) {
-        const PostgresDataAccess = await require('/home/tapsi/Tapsi/project1_joboonja/final/DataAccess/PostgresDataAccess');
+        const PostgresDataAccess = await Project.getDatabaseAccessInstance();
         let project = await PostgresDataAccess.getProjectWithId(id);
         return project !== undefined;
     }
 
     static async getProjectWithProjectIdWithActive(id, isActive) {
         let project;
-        const PostgresDataAccess = await require('/home/tapsi/Tapsi/project1_joboonja/final/DataAccess/PostgresDataAccess');
+        const PostgresDataAccess = await Project.getDatabaseAccessInstance();
         project = await PostgresDataAccess.getProjectWithId(id);
         if (project === undefined) {
             return undefined;
@@ -47,25 +47,25 @@ class Project {
     }
 
     static async addProject(project) {
-        const PostgresDataAccess = await require('/home/tapsi/Tapsi/project1_joboonja/final/DataAccess/PostgresDataAccess');
+        const PostgresDataAccess = await Project.getDatabaseAccessInstance();
         await PostgresDataAccess.addProject(project.id, project.title, project.skills, project.budget, project.ownerId,
             project.bidOffers, project.description, project.deadline, project.winnerId, project.imageURL, project.isActive);
     }
 
     async addBidOffers(bidOffer) {
-        const PostgresDataAccess = await require('/home/tapsi/Tapsi/project1_joboonja/final/DataAccess/PostgresDataAccess');
+        const PostgresDataAccess = await Project.getDatabaseAccessInstance();
         await PostgresDataAccess.addProjectBidOffer(this.id, bidOffer);
         this.bidOffers.push(bidOffer);
     }
 
     async setWinnerId(winnerId) {
-        const PostgresDataAccess = await require('/home/tapsi/Tapsi/project1_joboonja/final/DataAccess/PostgresDataAccess');
+        const PostgresDataAccess = await Project.getDatabaseAccessInstance();
         await PostgresDataAccess.setProjectWinnerId(this.id, winnerId);
         this.winnerId = winnerId;
     }
 
     async setIsActive(isActive) {
-        const PostgresDataAccess = await require('/home/tapsi/Tapsi/project1_joboonja/final/DataAccess/PostgresDataAccess');
+        const PostgresDataAccess = await Project.getDatabaseAccessInstance();
         await PostgresDataAccess.setProjectIsActive(this.id, isActive);
         this.isActive = isActive;
     }
@@ -111,6 +111,11 @@ class Project {
         summary = summary.concat("isActive:" + this.isActive + "\n");
 
         return summary;
+    }
+    static async getDatabaseAccessInstance(){
+        let PostgresDataAccess
+        PostgresDataAccess = await require('/home/tapsi/Tapsi/project1_joboonja/final/DataAccess/PostgresDataAccess');
+        return PostgresDataAccess;
     }
 
 }

@@ -16,78 +16,78 @@ class User {
     }
 
     static async getUserWithToken(token, authenticationDataAccess) {
-        const PostgresDataAccess = await require('/home/tapsi/Tapsi/project1_joboonja/final/DataAccess/PostgresDataAccess');
+        const PostgresDataAccess = await User.getDatabaseAccessInstance();
         let id = await authenticationDataAccess.getUserIdWithToken(token);
         return await PostgresDataAccess.getUserWithId(id);
     }
 
     static async getAllUsers() {
-        const PostgresDataAccess = await require('/home/tapsi/Tapsi/project1_joboonja/final/DataAccess/PostgresDataAccess');
+        const PostgresDataAccess = await User.getDatabaseAccessInstance();
         return await PostgresDataAccess.getAllUsers();
     }
 
     static async isThereAnyUserWithId(id) {
-        const PostgresDataAccess = await require('/home/tapsi/Tapsi/project1_joboonja/final/DataAccess/PostgresDataAccess');
+        const PostgresDataAccess = await User.getDatabaseAccessInstance();
         let user = await PostgresDataAccess.getUserWithId(id);
         return user !== undefined;
 
     }
 
     static async addUser(user) {
-        const PostgresDataAccess = await require('/home/tapsi/Tapsi/project1_joboonja/final/DataAccess/PostgresDataAccess');
+        const PostgresDataAccess = await User.getDatabaseAccessInstance();
         await PostgresDataAccess.addUser(user.id, user.firstName, user.lastName, user.jobTitle, user.skills, user.activeProjectsIds,
             user.inactiveProjectsIds, user.takenProjectsIds, user.bio,
             user.profilePictureURL, user.endorsedOtherUsersSkillsList);
     }
 
     static async getUserWithId(id) {
-        const PostgresDataAccess = await require('/home/tapsi/Tapsi/project1_joboonja/final/DataAccess/PostgresDataAccess');
+        const PostgresDataAccess = await User.getDatabaseAccessInstance();
         return await PostgresDataAccess.getUserWithId(id);
     }
 
     async getEndorsedOtherUsersSkillsList() {
-        const PostgresDataAccess = await require('/home/tapsi/Tapsi/project1_joboonja/final/DataAccess/PostgresDataAccess');
+        const PostgresDataAccess = await User.getDatabaseAccessInstance();
         return await PostgresDataAccess.getEndorsedOtherUsersSkillsList(this.id);
     }
 
     async setEndorsedOtherUsersSkillsList(endorsedOtherUsersSkillsList) {
-        const PostgresDataAccess = await require('/home/tapsi/Tapsi/project1_joboonja/final/DataAccess/PostgresDataAccess');
+        const PostgresDataAccess = await User.getDatabaseAccessInstance();
         await PostgresDataAccess.setUserEndorsedOtherUsersSkillsList(this.id, endorsedOtherUsersSkillsList);
     }
 
     async addProjectToTakenProjectsIds(projectId) {
-        const PostgresDataAccess = await require('/home/tapsi/Tapsi/project1_joboonja/final/DataAccess/PostgresDataAccess');
+        const PostgresDataAccess = await User.getDatabaseAccessInstance();
         await PostgresDataAccess.addProjectToTakenProjectsIds(this.id, projectId);
     }
 
     async addProjectToActiveProjectsIds(projectId) {
-        const PostgresDataAccess = await require('/home/tapsi/Tapsi/project1_joboonja/final/DataAccess/PostgresDataAccess');
+        const PostgresDataAccess = await User.getDatabaseAccessInstance();
         await PostgresDataAccess.addProjectToActiveProjectsIds(this.id, projectId);
     }
 
     async addProjectToInactiveProjectsIds(projectId) {
-        const PostgresDataAccess = await require('/home/tapsi/Tapsi/project1_joboonja/final/DataAccess/PostgresDataAccess');
+        const PostgresDataAccess = await User.getDatabaseAccessInstance();
         await PostgresDataAccess.addProjectToInactiveProjectsIds(this.id, projectId);
     }
 
     async removeProject(projectId) {
-        const PostgresDataAccess = await require('/home/tapsi/Tapsi/project1_joboonja/final/DataAccess/PostgresDataAccess');
+        const PostgresDataAccess = await User.getDatabaseAccessInstance();
         await PostgresDataAccess.addProjectToInactiveProjectsIds(this.id, projectId);
         await PostgresDataAccess.removeProjectIdFromActiveProjectsIds(this.id, projectId);
     }
 
     async removeSkill(skillName) {
-        const PostgresDataAccess = await require('/home/tapsi/Tapsi/project1_joboonja/final/DataAccess/PostgresDataAccess');
+        const PostgresDataAccess = await User.getDatabaseAccessInstance();
         await PostgresDataAccess.removeUserSkill(this.id, skillName);
     }
 
     async getSkills() {
-        const PostgresDataAccess = await require('/home/tapsi/Tapsi/project1_joboonja/final/DataAccess/PostgresDataAccess');
+        const PostgresDataAccess = await User.getDatabaseAccessInstance();
         return await PostgresDataAccess.getUserSkills(this.id);
     }
 
     async addToEndorsedOtherUsersSkillsList(endorsedObject) {
-        const PostgresDataAccess = await require('/home/tapsi/Tapsi/project1_joboonja/final/DataAccess/PostgresDataAccess');
+        const PostgresDataAccess = await User.getDatabaseAccessInstance();
         await PostgresDataAccess.addUserEndorsedOtherUsersSkillsList(this.id, endorsedObject);
     }
 
@@ -111,12 +111,12 @@ class User {
 
     async addSkill(skill) {
         this.skills.push(skill);
-        const PostgresDataAccess = await require('/home/tapsi/Tapsi/project1_joboonja/final/DataAccess/PostgresDataAccess');
+        const PostgresDataAccess = await User.getDatabaseAccessInstance();
         await PostgresDataAccess.addUserSkill(this.id, skill);
     }
 
     async increaseSkillPoints(skillName) {
-        const PostgresDataAccess = await require('/home/tapsi/Tapsi/project1_joboonja/final/DataAccess/PostgresDataAccess');
+        const PostgresDataAccess = await User.getDatabaseAccessInstance();
         let skills;
         skills = await this.getSkills();
         skills.forEach(skill => {
@@ -128,9 +128,9 @@ class User {
     }
 
     async getUserSummary() {
-        const PostgresDataAccess = await require('/home/tapsi/Tapsi/project1_joboonja/final/DataAccess/PostgresDataAccess');
         let skills, userGeneralInformation;
         skills = await this.getSkills();
+        const PostgresDataAccess = await User.getDatabaseAccessInstance();
         userGeneralInformation = await PostgresDataAccess.getUserGeneralInformation(this.id);
         let summary = "id: " + userGeneralInformation.id + "\nfirst name: " + userGeneralInformation.firstName + "\nlast name: " + userGeneralInformation.lastName + "\njob title: " + userGeneralInformation.jobTitle + "\nskills: \n[\n";
         skills.forEach(skill => {
@@ -139,6 +139,12 @@ class User {
         summary = summary.concat("]\n");
         summary = summary.concat("bio: " + userGeneralInformation.bio + "\n");
         return summary;
+    }
+
+    static async getDatabaseAccessInstance(){
+        let PostgresDataAccess
+        PostgresDataAccess = await require('/home/tapsi/Tapsi/project1_joboonja/final/DataAccess/PostgresDataAccess');
+        return PostgresDataAccess;
     }
 
     getId() {

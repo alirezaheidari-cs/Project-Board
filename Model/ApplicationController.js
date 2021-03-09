@@ -17,20 +17,12 @@ class ApplicationController {
         this.authenticationDataAccess = new AuthenticationDataAccess(ApplicationController.authenticationPort);
     }
 
+    // ********************************
+
     static async runDataAccessClasses() {
-        new Project()
-        new User()
         await ApplicationController.getSkillsAndProjectsFromServer();
         ApplicationController.schedulerForCheckProjectsDeadline();
         console.log("skills are ready");
-    }
-
-    async isTokenExpired(token) {
-        return await this.authenticationDataAccess.isTokenExpired(token);
-    }
-
-    async getUserIdWithToken(token) {
-        return await this.authenticationDataAccess.getUserIdWithToken(token)
     }
 
     static schedulerForCheckProjectsDeadline() {
@@ -41,25 +33,9 @@ class ApplicationController {
         });
     }
 
-    setCurrentMenu(menu) {
-        this.currentMenu = menu;
-    }
-
     static async getSkillsAndProjectsFromServer() {
         const serverDataAccess = new ServerDataAccess(ApplicationController.serverPort);
         ApplicationController.skillsSet = await serverDataAccess.getSkillsFromServer();
-    }
-
-
-    static async convertProjectJSONToProjectObject(allProjectsDataJSON) {
-        if (allProjectsDataJSON !== undefined) {
-            for (let i = 0; i < allProjectsDataJSON.length; i++) {
-                let projectData = allProjectsDataJSON[i];
-                let project = new Project(projectData.id, projectData.title, projectData.skills, projectData.budget, projectData.ownerId,
-                    projectData.bidOffers, projectData.description, (new Date(projectData.deadline)).getTime(), projectData.winnerId, projectData.imageURL, projectData.isActive);
-                await Project.addProject(project);
-            }
-        }
     }
 
     static async checkProjectsDeadlinesPassed() {
@@ -71,6 +47,21 @@ class ApplicationController {
                 await ApplicationController.getAuctionWinner(project.getId());
             }
         }
+    }
+
+    // ********************************
+
+
+    async isTokenExpired(token) {
+        return await this.authenticationDataAccess.isTokenExpired(token);
+    }
+
+    async getUserIdWithToken(token) {
+        return await this.authenticationDataAccess.getUserIdWithToken(token)
+    }
+
+    setCurrentMenu(menu) {
+        this.currentMenu = menu;
     }
 
     async registerUser(userInformationJSON) {
@@ -111,7 +102,7 @@ class ApplicationController {
         let skills = [];
         for (let i = 0; i < skillsJSON.length; i++) {
             let skillJSON = skillsJSON[i];
-            skills.push(new Skill(skillJSON.skillName, skillJSON.points));
+            skills.push(new Skill(skillJSON.skillName, parseInt(skillJSON.points)));
         }
         return skills;
     }
@@ -153,7 +144,7 @@ class ApplicationController {
     }
 
     async addBidOfferToProjectBidList(tokenOwnerId, project, userBudget) {
-        let bidOffer = new BidOffer(tokenOwnerId, project.getId(), userBudget);
+        let bidOffer = new BidOffer(tokenOwnerId, project.getId(), parseInt(userBudget));
         await project.addBidOffers(bidOffer);
         return "your request submitted";
     }
@@ -320,10 +311,10 @@ class ApplicationController {
             }
 
             if (userSubmittedBid && projectNeedThisSkill) {
-                return "you cannot remove this skill because you bid for some project which needed this skill";
+                return true;
             }
         }
-        return "skill removed successfully";
+        return false;
     }
 
     async setNewSkillsAfterRemovingASkill(tokenOwnerUser, skillName) {
@@ -351,13 +342,12 @@ class ApplicationController {
         tokenOwnerUser = await User.getUserWithToken(skillJSON.token, this.authenticationDataAccess);
         if (!(await tokenOwnerUser.isThisUserHasThisSkill(skillJSON.skillName)))
             return "you don't have this skill";
-        let removeSkillMessage = await this.checkUserBidNeedThisSkill(tokenOwnerUser, skillJSON.skillName);
-        if (removeSkillMessage === "you cannot remove this skill because you bid for some project which needed this skill")
-            return removeSkillMessage;
+        if (await this.checkUserBidNeedThisSkill(tokenOwnerUser, skillJSON.skillName))
+            return "you cannot remove this skill because you bid for some project which needed this skill";
 
         await this.setNewSkillsAfterRemovingASkill(tokenOwnerUser, skillJSON.skillName);
         await this.setNewEndorseListAfterRemoveASkill(tokenOwnerUser, skillJSON.skillName);
-        return removeSkillMessage;
+        return "skill removed successfully";
     }
 
     async getAllAvailableProjectsInformationForUser(seeAllAvailableProjectsInformationJSON) {
@@ -409,10 +399,11 @@ class ApplicationController {
         } else if (await tokenOwnerUser.isThisUserHasThisSkill(skillJSON.skillName)) {
             return "you already have this skill";
         }
-        await tokenOwnerUser.addSkill(new Skill(skillJSON.skillName, skillJSON.points));
+        await tokenOwnerUser.addSkill(new Skill(skillJSON.skillName, parseInt(skillJSON.points)));
         return "skill added successfully";
     }
 
 }
+
 
 module.exports = ApplicationController;
