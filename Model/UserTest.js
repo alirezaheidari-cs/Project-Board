@@ -1,7 +1,7 @@
 const Skill = require('../Model/Skill');
 const User = require('../Model/User')
 const AuthenticationDataAccess = require('../DataAccess/AuthenticationDataAccess')
-const PostgresDataAccess = require('../DataAccess/PostgresDataAccess');
+const PostgresDataAccess = require('../DataAccess/DatabaseDataAccess');
 let authenticationDataAccess = new AuthenticationDataAccess(9090);
 
 (async () => {

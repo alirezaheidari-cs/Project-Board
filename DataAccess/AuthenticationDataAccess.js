@@ -2,12 +2,9 @@ const axios = require('axios').default;
 
 
 class AuthenticationDataAccess {
+    static port = 9999;
 
-    constructor(port) {
-        this.port = port;
-    }
-
-    async sendRegisterInformationToServer(id, password) {
+    static async sendRegisterInformationToServer(id, password) {
         try {
             const response = await axios.post('http://localhost:' + this.port + '/register', {
                 id: id,
@@ -20,7 +17,7 @@ class AuthenticationDataAccess {
         }
     }
 
-    async sendLoginInformationToServer(id, password) {
+    static async sendLoginInformationToServer(id, password) {
         try {
             const response = await axios.post('http://localhost:' + this.port + '/login', {
                 id: id,
@@ -33,7 +30,7 @@ class AuthenticationDataAccess {
         }
     }
 
-    async getUserIdWithToken(token) {
+    static async getUserIdWithToken(token) {
         try {
             const response = await axios.post('http://localhost:' + this.port + '/getUserIdWithToken', {
                 token: token
@@ -45,7 +42,7 @@ class AuthenticationDataAccess {
         }
     }
 
-    async isTokenExpired(token) {
+    static async isTokenExpired(token) {
         try {
             const response = await axios.post('http://localhost:' + this.port + '/isTokenExpired', {
                 token: token

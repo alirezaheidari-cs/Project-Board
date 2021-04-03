@@ -14,8 +14,7 @@ const ProjectBidOfferModel = require('./Models/ProjectBidOfferModel');
 const ProjectSkillModel = require('./Models/ProjectSkillModel');
 
 
-
-class PostgresDataAccess {
+class DatabaseDataAccess {
 
     static async printUsersTable() {
         let users = await UserModel.query().withGraphFetched(`[
@@ -46,8 +45,8 @@ class PostgresDataAccess {
         try {
 
             let isActive = projectModel.isActive ? true : false;
-            let bidOffersObject = PostgresDataAccess.convertBidOffersModelListToObject(projectModel.bidOffers);
-            let skillsObject = PostgresDataAccess.convertSkillModelListToObject(projectModel.skills);
+            let bidOffersObject = DatabaseDataAccess.convertBidOffersModelListToObject(projectModel.bidOffers);
+            let skillsObject = DatabaseDataAccess.convertSkillModelListToObject(projectModel.skills);
             let project = new Project(projectModel.id, projectModel.title, skillsObject, projectModel.budget, projectModel.ownerId,
                 bidOffersObject, projectModel.description, projectModel.deadline, projectModel.winnerId, projectModel.imageURL, isActive);
             return project
@@ -136,11 +135,11 @@ class PostgresDataAccess {
 
     static userModelToUserObject(userModel) {
         try {
-            let skillsObject = PostgresDataAccess.convertSkillModelListToObject(userModel.skills);
-            let activeProjectsIdsJSON = PostgresDataAccess.projectIdModelToProjectIdJSON(userModel.activeProjectsIds);
-            let inactiveProjectsIdsJSON = PostgresDataAccess.projectIdModelToProjectIdJSON(userModel.inactiveProjectsIds);
-            let takenProjectsIdsJSON = PostgresDataAccess.projectIdModelToProjectIdJSON(userModel.takenProjectsIds);
-            let endorsedListObject = PostgresDataAccess.convertEndorsementModelListToObject(userModel.endorsedOtherUsersSkillsList);
+            let skillsObject = DatabaseDataAccess.convertSkillModelListToObject(userModel.skills);
+            let activeProjectsIdsJSON = DatabaseDataAccess.projectIdModelToProjectIdJSON(userModel.activeProjectsIds);
+            let inactiveProjectsIdsJSON = DatabaseDataAccess.projectIdModelToProjectIdJSON(userModel.inactiveProjectsIds);
+            let takenProjectsIdsJSON = DatabaseDataAccess.projectIdModelToProjectIdJSON(userModel.takenProjectsIds);
+            let endorsedListObject = DatabaseDataAccess.convertEndorsementModelListToObject(userModel.endorsedOtherUsersSkillsList);
             let user = new User(userModel.id, userModel.firstName, userModel.lastName, userModel.jobTitle, undefined, skillsObject,
                 activeProjectsIdsJSON, inactiveProjectsIdsJSON, takenProjectsIdsJSON, userModel.bio, userModel.profilePictureURL, endorsedListObject);
             return user;
@@ -178,7 +177,7 @@ class PostgresDataAccess {
         ]`);
         for (let i = 0; i < allProjectsModels.length; i++) {
             let projectModel = allProjectsModels[i];
-            let project = PostgresDataAccess.projectModelToProjectObject(projectModel);
+            let project = DatabaseDataAccess.projectModelToProjectObject(projectModel);
             allProjects.push(project);
         }
         return allProjects;
@@ -190,7 +189,7 @@ class PostgresDataAccess {
                 skills(defaultSelects) as skills,
                 bidOffers(defaultSelects) as bidOffers,
             ]`).where('id', id).then(projectList => projectList[0]);
-            let project = PostgresDataAccess.projectModelToProjectObject(projectModel)
+            let project = DatabaseDataAccess.projectModelToProjectObject(projectModel)
             return project
         } catch (e) {
             return undefined;
@@ -208,7 +207,7 @@ class PostgresDataAccess {
         ]`);
         for (let i = 0; i < allUsersModel.length; i++) {
             let userModel = allUsersModel[i];
-            let user = PostgresDataAccess.userModelToUserObject(userModel);
+            let user = DatabaseDataAccess.userModelToUserObject(userModel);
             allUsers.push(user);
         }
         return allUsers;
@@ -223,7 +222,7 @@ class PostgresDataAccess {
                 takenProjectsIds(defaultSelects) as takenProjectsIds,
                 endorsedOtherUsersSkillsList as endorsedOtherUsersSkillsList
             ]`).where('id', id).then(userList => userList[0]);
-            let user = PostgresDataAccess.userModelToUserObject(userModel);
+            let user = DatabaseDataAccess.userModelToUserObject(userModel);
             return user;
         } catch (e) {
             return undefined;
@@ -231,46 +230,55 @@ class PostgresDataAccess {
     }
 
     static async addUser(id, firstName, lastName, jobTitle, skills, activeProjectIds, inactiveProjectsIds, takenProjectsIds, bio, profilePictureURL, endorsedOtherUsersSkillsList) {
-        let skillsModel = PostgresDataAccess.userSkillsObjectToSkillsModel(skills, id);
-        let activeProjectsModel = PostgresDataAccess.projectJSONToProjectModel(activeProjectIds, id);
-        let inactiveProjectsModel = PostgresDataAccess.projectJSONToProjectModel(inactiveProjectsIds, id);
-        let takenProjectsModel = PostgresDataAccess.projectJSONToProjectModel(takenProjectsIds, id);
-        let endorsedListModel = PostgresDataAccess.endorseObjectToEndorseModel(endorsedOtherUsersSkillsList);
+        let skillsModel = DatabaseDataAccess.userSkillsObjectToSkillsModel(skills, id);
+        let activeProjectsModel = DatabaseDataAccess.projectJSONToProjectModel(activeProjectIds, id);
+        let inactiveProjectsModel = DatabaseDataAccess.projectJSONToProjectModel(inactiveProjectsIds, id);
+        let takenProjectsModel = DatabaseDataAccess.projectJSONToProjectModel(takenProjectsIds, id);
+        let endorsedListModel = DatabaseDataAccess.endorseObjectToEndorseModel(endorsedOtherUsersSkillsList);
 
-        await UserModel.query().insertGraph({
-                firstName: firstName,
-                id: id,
-                lastName: lastName,
-                jobTitle: jobTitle,
-                profilePictureURL: profilePictureURL,
-                bio: bio,
-                skills: skillsModel,
-                activeProjectsIds: activeProjectsModel,
-                inactiveProjectsIds: inactiveProjectsModel,
-                takenProjectsIds: takenProjectsModel,
-                endorsedOtherUsersSkillsList: endorsedListModel
-            },
-            {allowRefs: true});
+        try {
+            return await UserModel.query().insertGraph({
+                    firstName: firstName,
+                    id: id,
+                    lastName: lastName,
+                    jobTitle: jobTitle,
+                    profilePictureURL: profilePictureURL,
+                    bio: bio,
+                    skills: skillsModel,
+                    activeProjectsIds: activeProjectsModel,
+                    inactiveProjectsIds: inactiveProjectsModel,
+                    takenProjectsIds: takenProjectsModel,
+                    endorsedOtherUsersSkillsList: endorsedListModel
+                },
+                {allowRefs: true});
+        } catch (e) {
+            return undefined;
+        }
 
     }
 
     static async addProject(id, title, skills, budget, ownerId, bidOffers, description, deadline, winnerId, imageURL, isActive) {
-        let skillsModel = PostgresDataAccess.projectSkillsObjectsToSkillsModel(skills, id);
-        let bidOfferModel = PostgresDataAccess.projectBidOfferObjectToBidOfferModel(bidOffers);
-        await ProjectModel.query().insertGraph({
-                id: id,
-                title: title,
-                budget: budget,
-                ownerId: ownerId,
-                description: description,
-                deadline: deadline,
-                winnerId: winnerId,
-                imageURL: imageURL,
-                isActive: isActive,
-                skills: skillsModel,
-                bidOffers: bidOfferModel,
-            },
-            {allowRefs: true});
+        let skillsModel = DatabaseDataAccess.projectSkillsObjectsToSkillsModel(skills, id);
+        let bidOfferModel = DatabaseDataAccess.projectBidOfferObjectToBidOfferModel(bidOffers);
+        try {
+            return await ProjectModel.query().insertGraph({
+                    id: id,
+                    title: title,
+                    budget: budget,
+                    ownerId: ownerId,
+                    description: description,
+                    deadline: deadline,
+                    winnerId: winnerId,
+                    imageURL: imageURL,
+                    isActive: isActive,
+                    skills: skillsModel,
+                    bidOffers: bidOfferModel,
+                },
+                {allowRefs: true});
+        } catch (e) {
+            return undefined
+        }
+
     }
 
     //***********************user insert/update/delete/get **********************//
@@ -338,17 +346,17 @@ class PostgresDataAccess {
 
     static async getEndorsedOtherUsersSkillsList(id) {
         let userEndorsedList = await UserEndorsedModel.query().where('userId', id);
-        return PostgresDataAccess.convertEndorsementModelListToObject(userEndorsedList);
+        return DatabaseDataAccess.convertEndorsementModelListToObject(userEndorsedList);
     }
 
     static async getUserSkills(id) {
         let usersSkills = await UserSkillModel.query().select('skillName', 'points').where('userId', id);
-        return PostgresDataAccess.convertSkillModelListToObject(usersSkills);
+        return DatabaseDataAccess.convertSkillModelListToObject(usersSkills);
     }
 
     static async setUserEndorsedOtherUsersSkillsList(id, endorsedOtherUsersSkillsList) {
         let currentEndorsedList;
-        currentEndorsedList = await PostgresDataAccess.getEndorsedOtherUsersSkillsList(id);
+        currentEndorsedList = await DatabaseDataAccess.getEndorsedOtherUsersSkillsList(id);
 
         for (let i = 0; i < currentEndorsedList.length; i++) {
             let currentEndorse = currentEndorsedList[i];
@@ -412,8 +420,7 @@ class PostgresDataAccess {
 }
 
 
-
-module.exports = PostgresDataAccess;
+module.exports = DatabaseDataAccess;
 //
 
 //

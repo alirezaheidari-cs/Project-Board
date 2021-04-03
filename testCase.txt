@@ -1,0 +1,40 @@
+login {"id":"user1","password":"alireza"}
+addProject {"id":3,"title":"project3","skills":[{"skillName":"HTML","points":20}],"budget":100,"ownerId":"user1","description":"goood","deadline":"2021/10/10","imageURL":"asfaa","token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MTUyMjEwMTcsImlkIjoidXNlcjEifQ.L1vw6Y-WItGavrSrE3-236uAKGmtobOZh3qTI8khJH4"}
+bid {"biddingUser":"user3","projectId":1,"bidAmount":10,"token":""}
+auction {"id":"user1","projectId":1,"token":""}
+editProfile {"token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MTQyNzMwMjcsImlkIjoidXNlcjIifQ.dU2hYhhDNHMhofKCHl8hTWSysTHygbHXLf4i05OIISo"}
+removeSkill {"id":"user3","skillName":"CSS","token":""}
+seeAllUsersInformation {"token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MTQyNzMwMjcsImlkIjoidXNlcjIifQ.dU2hYhhDNHMhofKCHl8hTWSysTHygbHXLf4i05OIISo"}
+endorseAUserSkill {"id":"user3","endorsedUserId":"user1","skillName":"JS","token":""}
+seeSpecificProjectInformation {"id":3,"token":""}
+seeSpecificUserInformation {"id":"user44","token":""}
+addSkill {"id":"user4","skillName":"CSS","points":120,"token":""}
+showProfile {"token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MTQyNzMwMjcsImlkIjoidXNlcjIifQ.dU2hYhhDNHMhofKCHl8hTWSysTHygbHXLf4i05OIISo"}
+register {"id":"user1","firstName":"hamid","lastName":"yaghobi","jobTitle":"AI","password":"alireza","bio":"olympiad","profilePictureURL":"gog"}
+
+**************************************************
+register {"id":"user1","firstName":"hamid","lastName":"yaghobi","jobTitle":"AI","password":"alireza","bio":"olympiad","profilePictureURL":"gog"}
+register {"id":"user2","firstName":"hamid","lastName":"yaghobi","jobTitle":"AI","password":"alireza","bio":"olympiad","profilePictureURL":"gog"}
+register {"id":"user3","firstName":"hamid","lastName":"yaghobi","jobTitle":"AI","password":"alireza","bio":"olympiad","profilePictureURL":"gog"}
+register {"id":"user4","firstName":"hamid","lastName":"yaghobi","jobTitle":"AI","password":"alireza","bio":"olympiad","profilePictureURL":"gog"}
+register {"id":"user5","firstName":"hamid","lastName":"yaghobi","jobTitle":"AI","password":"alireza","bio":"olympiad","profilePictureURL":"gog"}
+
+addProject {"id":43,"title":"project1","skills":[{"skillName":"CSS","points":20}],"budget":10,"description":"goood","deadline":"2021/10/10","imageURL":"asfaa","token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MTU3NDcxMDIsImlkIjoidXNlcjEifQ.9VHR-iRweCOxsFEhqFZf2aM0LaPKmzEA4Wh4oESteg8"}
+addProject {"id":2,"title":"project2","skills":[{"skillName":"HTML","points":20},{"skillName":"CSS","points":20}],"budget":1,"description":"goood","deadline":"2001/10/10","imageURL":"asfaa","token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MTUyMjEwMTcsImlkIjoidXNlcjEifQ.L1vw6Y-WItGavrSrE3-236uAKGmtobOZh3qTI8khJH4"}
+
+addProject {"id":3,"title":"project2","skills":[{"skillName":"HTML","points":20},{"skillName":"CSS","points":20}],"budget":1,"description":"goood","deadline":"2010/10/10","imageURL":"asfaa","token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MTQ3Mjk1NDAsImlkIjoidXNlcjEifQ.rJsgv3a-XvV_i4GopeKnLIsyAuNxPRRRmWEr9ndiXVI"}
+eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MTQ2NTkzMDEsImlkIjoidXNlcjEifQ.d1K5GDINPY2gdiSrx0qSW4z1CKCnRODsPFBVSQmvYk0
+
+login {"id":"user1"password":"alireza"}
+addProject {"id":3,"title":"project3","skills":[{"skillName":"HTML","points":20}],"budget":100,"description":"goood","deadline":"2021/10/10","imageURL":"asfaa","token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MTUzMjE4NjEsImlkIjoidXNlcjEifQ.dxa6rxp8sUBC8Ma789M-XhhuDNbndHi5xnxv8raEQdk"}
+bid {"projectId":"3","bidAmount":1,"token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MTUzMTA3OTcsImlkIjoidXNlcjIifQ.I1JOJRWlMQDwSUJ1IDlCitfAK6rP3zg0dY4sj3YnVYo"}
+auction {"projectId":4,"token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MTU3NDQzOTQsImlkIjoidXNlcjIifQ.LNRal7aKbjR9q6CrzoByqfblkqsTbVQkfiUgDx0MKDc"}
+editProfile {"token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MTUzMTE2NDQsImlkIjoidXNlcjMifQ.s4wzMAABq1UMv-ju4F1pn4EEImwflJBx5PrenI7HVe4"}
+removeSkill {"skillName":"HTML","token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MTUzMTA3MjIsImlkIjoidXNlcjEifQ.MPMDM4TsGnbRjSdw5FB_-MCnhld52TyJMFXP8lt-KEI"}
+seeAllUsersInformation {"token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MTQ0MTMyMDksImlkIjoidXNlcjEifQ.n3Zfb3VmgfDzKi-w-zeSat1ITZAA4ykaDcH48jLk6VM"}
+endorseAUserSkill {"endorsedUserId":"user2","skillName":"HTML","token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MTUzMTE2NDQsImlkIjoidXNlcjMifQ.s4wzMAABq1UMv-ju4F1pn4EEImwflJBx5PrenI7HVe4"}
+seeSpecificProjectInformation {"id":1,"token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MTUxMzY4ODcsImlkIjoidXNlcjEifQ.Zu_w9xyMPOe8f1CaOk5orXgVh7GjrBXoKB8cQ5u6b9s"}
+seeSpecificUserInformation {"id":"user2" ,"token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MTUxMzY4ODcsImlkIjoidXNlcjEifQ.Zu_w9xyMPOe8f1CaOk5orXgVh7GjrBXoKB8cQ5u6b9s"}
+addSkill {"skillName":"HTML","points":139,"token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MTUzMTE2NDQsImlkIjoidXNlcjMifQ.s4wzMAABq1UMv-ju4F1pn4EEImwflJBx5PrenI7HVe4"}
+showProfile {"token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MTUzMTE2NDQsImlkIjoidXNlcjMifQ.s4wzMAABq1UMv-ju4F1pn4EEImwflJBx5PrenI7HVe4"}
+register {"id":"user1","firstName":"hamid","lastName":"yaghobi","jobTitle":"AI","password":"alireza","bio":"olympiad","profilePictureURL":"gog"}
